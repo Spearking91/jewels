@@ -20,7 +20,7 @@ export default function Homepage() {
           backgroundImage: `url(${coverImageUrl})`,
         }}
       >
-        <div className="hero-overlay inset-0 bg-gradient-to-b from-[#050507]/60 via-[#050507]/80 to-[#050507]">
+        <div className="hero-overlay inset-0 bg-gradient-to-b from-[#050507]/20 via-[#050507]/50 to-[#050507]/80">
           <Navbar />
         </div>
         <div className="hero-content text-neutral-content text-center">
