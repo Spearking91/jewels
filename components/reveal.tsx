@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 const Reveal = ({
   children,
   className = "",
-  delay = 300,
+  delay = 0,
 }: {
   children: ReactNode;
   className?: string;
