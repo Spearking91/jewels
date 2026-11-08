@@ -7,6 +7,7 @@ import Image from "next/image";
 import Imgcard from "@/components/imgcard";
 import EndFooter from "@/components/endFooter";
 import Reveal from "@/components/reveal";
+import Home from "@/components/home";
 
 export default function Homepage() {
   const products = JEWELRY_ITEMS;
@@ -14,13 +15,14 @@ export default function Homepage() {
     "https://images.unsplash.com/photo-1694062045776-f48d9b6de57e?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D";
   return (
     <main className="flex min-h-screen flex-col items-center bg-base-100 text-base-content">
+      <Home />
       <div
         className="hero min-h-screen "
         style={{
           backgroundImage: `url(${coverImageUrl})`,
         }}
       >
-        <div className="hero-overlay inset-0 bg-gradient-to-b from-[#050507]/20 via-[#050507]/50 to-[#050507]/80">
+        <div className="hero-overlay inset-0 bg-gradient-to-b from-[#050507]/80 via-[#050507]/50 to-[#050507]/90">
           <Navbar />
         </div>
         <div className="hero-content text-neutral-content text-center">

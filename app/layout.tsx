@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Great_Vibes } from "next/font/google";
+import { Cormorant_Garamond, Geist, Great_Vibes } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/footer";
 import { Analytics } from "@vercel/analytics/next";
 import { Suspense } from "react";
 
+export const cormorantGaramond = Cormorant_Garamond({
+  weight: "400",
+  variable: "--font-cormorant-garamond",
+  subsets: ["latin"],
+});
 export const greatVibes = Great_Vibes({
   weight: "400",
   variable: "--font-great-vibes",
@@ -29,12 +34,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${greatVibes.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${cormorantGaramond.variable} ${greatVibes.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col font-cormorant-garamond text-base-content">
         {children}
         <Footer />
-        
+
         {/* Vercel Analytics wrapped in Suspense and placed inside body */}
         <Suspense fallback={null}>
           <Analytics />
