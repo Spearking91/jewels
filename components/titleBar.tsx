@@ -1,66 +1,6 @@
-// import { DiamondAlt } from "@boxicons/react";
-
-// const TitleBar = () => {
-//   const listItems = ["SHOP", "NEW ARRIVALS", "EARRINGS", "ABOUT", "CONTACT"];
-//   return (
-//     <div className="max-lg:collapse bg-base-200 lg:mb-48  w-full rounded-md border-b-1 border-gradient-to-b from-primary to-secondary">
-//       <input id="navbar-1-toggle" className="peer hidden" type="checkbox" />
-//       <label
-//         htmlFor="navbar-1-toggle"
-//         className="fixed inset-0 hidden max-lg:peer-checked:block"
-//       ></label>
-//       <div className="collapse-title navbar p-5">
-//         <div className="navbar-start">
-//           <label htmlFor="navbar-1-toggle" className="btn btn-ghost lg:hidden">
-//             <svg
-//               aria-label="Menu"
-//               xmlns="http://www.w3.org/2000/svg"
-//               className="h-5 w-5"
-//               fill="none"
-//               viewBox="0 0 24 24"
-//               stroke="currentColor"
-//             >
-//               <path
-//                 strokeLinecap="round"
-//                 strokeLinejoin="round"
-//                 strokeWidth="2"
-//                 d="M4 6h16M4 12h8m-8 6h16"
-//               />
-//             </svg>
-//           </label>
-//           <button className="btn btn-ghost text-xl">
-//             <img src="/logo.jpeg" alt="Logo" className="h-20 w-auto" />
-//           </button>
-//         </div>
-//         <div className="navbar-center hidden lg:flex">
-//           <ul className="menu menu-horizontal px-1 font-bold">
-//             {listItems.map((item) => (
-//               <li key={item}>
-//                 <button>{item}</button>
-//               </li>
-//             ))}
-//           </ul>
-//         </div>
-//       </div>
-
-//       <div className="collapse-content lg:hidden z-1">
-//         <ul className="menu">
-//           {listItems.map((item) => (
-//             <li key={item}>
-//               <button>{item}</button>
-//             </li>
-//           ))}
-//         </ul>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default TitleBar;
-
 "use client";
 
-import { CompanyImageUrl } from "@/lib/constants";
+import { CompanyImageUrl, CompanyName, CompanySlogan } from "@/lib/constants";
 import React, { useState } from "react";
 
 const TitleBar = () => {
@@ -77,8 +17,8 @@ const TitleBar = () => {
         className="fixed inset-0 hidden max-lg:peer-checked:block"
       ></label>
 
-      <div className="collapse-title navbar p-5">
-        <div className="navbar-start">
+      <div className="collapse-title navbar p-3 lg:p-5 flex justify-between items-center">
+        <div className="navbar-start flex items-center gap-2">
           <label htmlFor="navbar-1-toggle" className="btn btn-ghost lg:hidden">
             <svg
               aria-label="Menu"
@@ -96,9 +36,24 @@ const TitleBar = () => {
               />
             </svg>
           </label>
-          <button className="btn btn-ghost text-xl">
-            <img src={CompanyImageUrl} alt="Logo" className="h-20 w-auto" />
-          </button>
+
+          {/* Replaced rigid button with an auto-height anchor/div wrapper */}
+          <a
+            href="/"
+            className="btn btn-ghost h-auto py-1 px-2 flex flex-col items-center text-left"
+          >
+            <img
+              src={CompanyImageUrl}
+              alt="Logo"
+              className="h-10 lg:h-12 w-auto object-contain"
+            />
+            <span className="text-xs lg:text-sm font-bold tracking-wide mt-1">
+              {CompanyName.toUpperCase()}
+            </span>
+            <span className="font-great-vibes text-primary text-base lg:text-lg leading-none">
+              {CompanySlogan}
+            </span>
+          </a>
         </div>
 
         {/* Desktop Menu */}
@@ -126,8 +81,8 @@ const TitleBar = () => {
       </div>
 
       {/* Mobile Menu Dropdown */}
-      <div className="collapse-content lg:hidden z-1">
-        <ul className="menu">
+      <div className="collapse-content lg:hidden z-10">
+        <ul className="menu bg-base-200 rounded-box p-2">
           {listItems.map((item) => {
             const isActive = activeItem === item;
             return (

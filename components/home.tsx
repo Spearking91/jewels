@@ -41,7 +41,7 @@ const Home = () => {
             />
             <div>
               <h1 className="text-5xl font-bold ">
-                EVERY PIECE <br />A STATEMENT
+                EVERY PIECE, <br />A STATEMENT
               </h1>
               <p className="py-6 font-serif text-lg">
                 Discover our curated collection of <br />
