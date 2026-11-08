@@ -22,13 +22,15 @@ export default function Homepage() {
           backgroundImage: `url(${coverImageUrl})`,
         }}
       >
-        <div className="hero-overlay inset-0 bg-gradient-to-b from-[#050507]/80 via-[#050507]/50 to-[#050507]/90">
-          <Navbar />
+        <div className="hero-overlay inset-0 bg-gradient-to-b from-[#050507] via-[#050507]/80 via-[#050507]/30 to-[#050507]/80">
+          {/* <Navbar /> */}
         </div>
         <div className="hero-content text-neutral-content text-center">
           <Reveal>
             <section className="border border-gray-300 p-5 w-full rounded-xl">
-              <h1 className={"text-6xl text-left font-great-vibes"}>
+              <h1
+                className={"text-6xl text-left text-primary font-great-vibes"}
+              >
                 Discover Modern <br />
                 Jewellery
               </h1>
@@ -39,7 +41,7 @@ export default function Homepage() {
                 </div>
                 <div className="w-full flex flex-col gap-5">
                   <Gallery />
-                  <p className=" font-semibold text-left">
+                  <p className=" font-semibold text-left text-base-content/80">
                     Explore Timeless Jewellery Crafted To Elevate Every Look.
                     Discover Elegant Pieces Designed With Detail, Beauty, And
                     Modern Style In
@@ -54,19 +56,18 @@ export default function Homepage() {
       <div className="px-5 w-full ">
         {/* {spiral} */}
         <Reveal>
-          <section className="border border-gray-300 w-full rounded-xl overflow-hidden">
+          <section className=" min-h-screen flex justify-center items-center w-full md:p-5">
             <div
-              className="hero min-h-screen relative bg-cover bg-center"
+              className="  overflow-hidden border border-gray-300 rounded-lg min-h-screen lg:max-w-3/4 relative w-full bg-cover bg-center"
               style={{
-                backgroundImage:
-                  "url(https://images.unsplash.com/photo-1765883591687-9256219948cd?q=80&w=1760&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D)",
+                backgroundImage: "url(/jewel_box.jpeg)",
               }}
             >
               {/* Optional background dimming overlay */}
-              <div className="absolute inset-0 bg-black/30" />
+              <div className="absolute inset-0 bg-black/70" />
 
               {/* Content positioned precisely where you want it (top-right here) */}
-              <div className="absolute inset-0 z-10 flex justify-start items-start p-10 text-neutral-content">
+              <div className="absolute inset-0 z-10 flex justify-start items-start p-10 text-base-content">
                 <div className="max-w-md text-left">
                   <p className="text-sm font-medium">
                     Discover Beautifully Crafted Jewellery Designed For Every
@@ -75,7 +76,7 @@ export default function Homepage() {
                   </p>
                 </div>
               </div>
-              <div className="absolute inset-0 z-10 flex justify-center items-center p-10 text-neutral-content">
+              <div className="absolute inset-0 z-10 flex justify-center items-center p-10 text-primary">
                 <div className="max-w-md text-center">
                   <p className="text-4xl font-medium font-great-vibes">
                     Jewellery That Is Simply
@@ -85,11 +86,11 @@ export default function Homepage() {
                 </div>
               </div>
 
-              <div className="hidden md:flex absolute inset-0 z-10 flex justify-start items-end p-10 text-neutral-content">
+              <div className="hidden md:flex absolute inset-0 z-10 flex justify-start items-end p-10 text-base-content">
                 <Imgcard src={coverImageUrl} alt={"lady"} style={"w-50 h-70"} />
               </div>
 
-              <div className="absolute inset-0 z-10 flex justify-end items-end p-10 text-neutral-content">
+              <div className="absolute inset-0 z-10 flex justify-end items-end p-10 text-base-content">
                 <div className="max-w-md text-right ">
                   {/* <Imgcard src={coverImageUrl} alt={"lady"} style={"w-50 h-70"} /> */}
                   <p className="text-xs font-medium">
@@ -102,8 +103,8 @@ export default function Homepage() {
           </section>
         </Reveal>
         <Reveal>
-          <section className=" min-h-screen">
-            <div className="flex flex-col items-center justify-center lg:flex-row-reverse">
+          <section className=" min-h-screen flex items-center justify-center">
+            <div className="flex flex-col max-w-2/3  lg:flex-row-reverse">
               <img
                 alt="bracelet"
                 src="https://images.unsplash.com/photo-1573408301185-9146fe634ad0?q=80&w=2675&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D"

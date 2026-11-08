@@ -48,10 +48,10 @@ const Card = ({
       {/* Product Details Specs */}
       <div className="w-full md:w-1/2 flex flex-col text-left space-y-4">
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-full text-[10px] uppercase tracking-widest font-semibold bg-amber-400/10 text-amber-300 border border-amber-400/20">
+          <span className="px-3 py-1 rounded-full text-[10px] uppercase tracking-widest font-semibold bg-primary/10 text-primary border border-primary/50">
             {category}
           </span>
-          <span className="text-xs text-neutral-400 tracking-wider font-mono">
+          <span className="text-xs text-base-content/40 tracking-wider font-mono">
             {subtitle}
           </span>
         </div>
@@ -60,32 +60,32 @@ const Card = ({
           {title}
         </h1>
 
-        <p className="text-sm text-neutral-300 leading-relaxed font-light">
+        <p className="text-sm text-base-content/70 leading-relaxed font-light">
           {description}
         </p>
 
-        <div className="pt-2 border-t border-white/10 space-y-1.5 text-xs text-neutral-400">
+        <div className="pt-2 border-t border-white/10 space-y-1.5 text-xs text-base-content/70">
           <p>
-            <span className="text-amber-200/70 font-medium">Gemstone:</span>{" "}
+            <span className="text-primary/70 font-medium">Gemstone:</span>{" "}
             {gemstone}
           </p>
           <p>
-            <span className="text-amber-200/70 font-medium">Craft Metal:</span>{" "}
+            <span className="text-primary/70 font-medium">Craft Metal:</span>{" "}
             {metal}
           </p>
         </div>
 
         <div className="pt-4 flex items-center justify-between">
           <div>
-            <span className="text-xs text-neutral-400 block uppercase tracking-wider">
+            <span className="text-xs text-base-content/40 block uppercase tracking-wider">
               Price
             </span>
-            <span className="text-2xl font-serif text-amber-300 font-medium">
+            <span className="text-2xl font-serif text-primary font-medium">
               {price}
             </span>
           </div>
           <div className="flex gap-2">
-            <button className="px-5 py-2.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 text-black font-semibold text-xs tracking-wider uppercase hover:brightness-110 transition shadow-lg shadow-amber-500/20 flex items-center gap-2">
+            <button className="px-5 py-2.5 rounded-full bg-gradient-to-r from-primary/40 to-primary/80 text-black font-semibold text-xs tracking-wider uppercase hover:brightness-110 transition shadow-lg shadow-primary/20 flex items-center gap-2">
               <ShoppingBag className="w-4 h-4" /> Acquire Piece
             </button>
           </div>

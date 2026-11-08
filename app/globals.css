@@ -2,6 +2,7 @@
 @theme {
   --font-sans: var(--font-geist-sans), sans-serif;
   --font-great-vibes: var(--font-great-vibes), cursive;
+  --font-cormorant-garamond: var(--font-cormorant-garamond);
 }
 @plugin "daisyui" {
   themes: Jewel --default;

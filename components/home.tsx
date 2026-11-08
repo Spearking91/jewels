@@ -13,7 +13,7 @@ const Home = () => {
   );
   return (
     <>
-      <section className="min-h-screen flex flex-col items-center justify-center text-base-content w-full px-5">
+      <section className="min-h-screen flex flex-col items-center justify-center text-base-content w-full px-5 pb-10">
         <TitleBar />
         <div className=" flex w-full justify-center items-center flex-col-reverse gap-5 lg:flex-row-reverse">
           <div className=" flex justify-between items-center flex-col ">
@@ -39,7 +39,9 @@ const Home = () => {
               price={"189"}
             />
             <div>
-              <h1 className="text-5xl font-bold">TIMLESS GOLD</h1>
+              <h1 className="text-5xl font-bold ">
+                EVERY PIECE <br />A STATEMENT
+              </h1>
               <p className="py-6 font-serif text-lg">
                 Discover our curated collection of <br />
                 handcrafted gold jewellery, designed
