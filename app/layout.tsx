@@ -31,13 +31,15 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${greatVibes.variable} h-full antialiased`}
     >
-        <Analytics />
-      <Suspense fallback={<div className="h-16 w-full bg-base-100" />}>
-        <body className="min-h-full flex flex-col">
-          {children}
-          <Footer />
-        </body>
-      </Suspense>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <Footer />
+        
+        {/* Vercel Analytics wrapped in Suspense and placed inside body */}
+        <Suspense fallback={null}>
+          <Analytics />
+        </Suspense>
+      </body>
     </html>
   );
 }
