@@ -17,7 +17,7 @@ const Home = () => {
         <TitleBar />
         <div className=" flex w-full justify-center items-center flex-col-reverse gap-5 lg:flex-row-reverse">
           <div className=" flex justify-between items-center flex-col ">
-            <div className="h-50 w-full flex flex-col justify-between items-center  ">
+            <div className="h-50 w-full flex flex-col justify-between items-center hidden lg:flex">
               <Design />
               <Design />
             </div>
