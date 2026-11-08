@@ -31,8 +31,8 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${greatVibes.variable} h-full antialiased`}
     >
-      <Suspense fallback={<div className="h-16 w-full bg-base-100" />}>
         <Analytics />
+      <Suspense fallback={<div className="h-16 w-full bg-base-100" />}>
         <body className="min-h-full flex flex-col">
           {children}
           <Footer />
