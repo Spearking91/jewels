@@ -41,7 +41,7 @@ const Home = () => {
                 <br /> for the modern individual.
               </p>
               <button className="btn btn-primary">Shop Now</button>
-              <p className="py-6">
+              <p className="py-6 text-primary font-bolds">
                 FREE SHIPPING ON ORDERS OVER $100 • 1 YEAR WARRANTY
               </p>
             </div>
