@@ -1,3 +1,4 @@
+import { CompanyImageUrl, CompanyName } from "@/lib/constants";
 import { DiamondAlt, LocationAlt, MailOpen, Phone } from "@boxicons/react";
 import React from "react";
 
@@ -11,8 +12,8 @@ const EndFooter = () => {
     <section className="footer sm:footer-horizontal border-b p-10">
       <aside>
         <div className="flex flex-row items-center gap-2 text-lg font-semibold">
-          <DiamondAlt className="size-10" />
-          <h2>Jewel</h2>
+          <img src={CompanyImageUrl} alt="Logo" className="h-10 w-auto" />
+          <h2>{CompanyName.toUpperCase()}</h2>
         </div>
         <p>
           <br />

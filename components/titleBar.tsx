@@ -60,6 +60,7 @@
 
 "use client";
 
+import { CompanyImageUrl } from "@/lib/constants";
 import React, { useState } from "react";
 
 const TitleBar = () => {
@@ -69,7 +70,7 @@ const TitleBar = () => {
   const [activeItem, setActiveItem] = useState("SHOP");
 
   return (
-    <div className="max-lg:collapse bg-base-200 lg:mb-48 w-full rounded-md border-b-1 border-gradient-to-b from-primary to-secondary">
+    <div className="max-lg:collapse bg-base-200 mb-10 lg:mb-18 w-full rounded-md border-b-1 border-gradient-to-b from-primary to-secondary">
       <input id="navbar-1-toggle" className="peer hidden" type="checkbox" />
       <label
         htmlFor="navbar-1-toggle"
@@ -96,7 +97,7 @@ const TitleBar = () => {
             </svg>
           </label>
           <button className="btn btn-ghost text-xl">
-            <img src="/logo.jpeg" alt="Logo" className="h-20 w-auto" />
+            <img src={CompanyImageUrl} alt="Logo" className="h-20 w-auto" />
           </button>
         </div>
 
