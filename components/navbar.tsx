@@ -49,7 +49,7 @@ const Navbar = () => {
             </li>
           </ul>
         </div>
-        <div className="navbar-end gap-5">
+        <div className="navbar-center md:navbar-end gap-5">
           <div className="divider divider-primary w-full px-20 hidden lg:flex" />
           {/* <input type="text" placeholder="Search" className="input w-64 lg:w-auto" /> */}
           <button>WISHLIST</button>

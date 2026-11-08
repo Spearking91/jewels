@@ -49,7 +49,7 @@ export default function Homepage() {
         </div>
       </div>
 
-      <div className="px-10">
+      <div className="px-5 w-full ">
         {/* {spiral} */}
         <Reveal>
           <section className="border border-gray-300 w-full rounded-xl overflow-hidden">
@@ -83,7 +83,7 @@ export default function Homepage() {
                 </div>
               </div>
 
-              <div className="absolute inset-0 z-10 flex justify-start items-end p-10 text-neutral-content">
+              <div className="hidden md:flex absolute inset-0 z-10 flex justify-start items-end p-10 text-neutral-content">
                 <Imgcard src={coverImageUrl} alt={"lady"} style={"w-50 h-70"} />
               </div>
 
@@ -100,8 +100,8 @@ export default function Homepage() {
           </section>
         </Reveal>
         <Reveal>
-          <section className="hero min-h-screen">
-            <div className="hero-content flex-col lg:flex-row-reverse">
+          <section className=" min-h-screen">
+            <div className="flex flex-col items-center justify-center lg:flex-row-reverse">
               <img
                 alt="bracelet"
                 src="https://images.unsplash.com/photo-1573408301185-9146fe634ad0?q=80&w=2675&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D"
