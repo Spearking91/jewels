@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Great_Vibes } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/footer";
+import { Analytics } from "@vercel/analytics/next";
 
 export const greatVibes = Great_Vibes({
   weight: "400",
@@ -29,7 +30,9 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${greatVibes.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}
+      <Analytics />
+      <body className="min-h-full flex flex-col">
+        {children}
         <Footer />
       </body>
     </html>
