@@ -2,6 +2,7 @@ import React from "react";
 import PictureCard from "./pictureCard";
 import { Sparkle } from "@boxicons/react";
 import TitleBar from "./titleBar";
+import Link from "next/link";
 
 const Home = () => {
   const Design = ({ style }: { style?: any }) => (
@@ -47,7 +48,9 @@ const Home = () => {
                 handcrafted gold jewellery, designed
                 <br /> for the modern individual.
               </p>
-              <button className="btn btn-primary">Shop Now</button>
+              <Link className="btn btn-primary" href={"/shop"}>
+                Shop Now
+              </Link>
               <p className="py-6 text-primary font-bolds">
                 FREE SHIPPING ON ORDERS OVER $100 • 1 YEAR WARRANTY
               </p>

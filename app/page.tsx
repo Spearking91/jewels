@@ -87,7 +87,7 @@ export default function Homepage() {
               </div>
 
               <div className="hidden md:flex absolute inset-0 z-10 flex justify-start items-end p-10 text-base-content">
-                <Imgcard src={coverImageUrl} alt={"lady"} style={"w-50 h-70"} />
+                <Imgcard src={"/jewel_bag.jpeg"} alt={"lady"} style={"w-50 h-70"} />
               </div>
 
               <div className="absolute inset-0 z-10 flex justify-end items-end p-10 text-base-content">
