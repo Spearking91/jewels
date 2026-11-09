@@ -1,6 +1,7 @@
 "use client";
 import { Heart, ShoppingBag } from "@boxicons/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 type props = {
@@ -12,6 +13,8 @@ type props = {
   gemstone: string;
   metal: string;
   price: string;
+  style?: any;
+  redirectUrl: string;
 };
 
 const Card = ({
@@ -23,12 +26,17 @@ const Card = ({
   gemstone,
   metal,
   price,
+  redirectUrl,
+  style = "md:flex-row w-96 lg:w-1/3",
 }: props) => {
   const [isLiked, setIsLiked] = useState(false);
+  const router = useRouter();
   return (
-    <div className="w-96 lg:w-1/3 flex flex-col md:flex-row gap-5 border border-white/10 rounded-2xl p-5 bg-black/20 backdrop-blur-md">
+    <div
+      className={` flex flex-col ${style} gap-5 border border-white/10 rounded-2xl p-5 bg-black/20 backdrop-blur-md`}
+    >
       {/* Detailed Image Spotlight */}
-      <div className="relative group w- md:w-1/2 aspect-square rounded-2xl overflow-hidden border border-white/15 bg-black/40 flex items-center justify-center">
+      <div className="relative group w- md:w-full aspect-square rounded-2xl overflow-hidden border border-white/15 bg-black/40 flex items-center justify-center">
         <img
           src={thumbUrl}
           alt={title}
@@ -47,7 +55,7 @@ const Card = ({
       </div>
 
       {/* Product Details Specs */}
-      <div className="w-full md:w-1/2 flex flex-col text-left space-y-4">
+      <div className="w-full flex flex-col text-left space-y-4">
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 rounded-full text-[10px] uppercase tracking-widest font-semibold bg-primary/10 text-primary border border-primary/50">
             {category}
@@ -86,12 +94,12 @@ const Card = ({
             </span>
           </div>
           <div className="flex gap-2">
-            <Link
-              href="/checkout"
+            <button
+              onClick={()=>router.push(redirectUrl)}
               className="px-5 py-2.5 rounded-full bg-gradient-to-r from-primary/40 to-primary/80 text-black font-semibold text-xs tracking-wider uppercase hover:brightness-110 transition shadow-lg shadow-primary/20 flex items-center gap-2"
             >
               <ShoppingBag className="w-4 h-4" /> Acquire Piece
-            </Link>
+            </button>
           </div>
         </div>
       </div>

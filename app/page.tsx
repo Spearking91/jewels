@@ -8,9 +8,12 @@ import Imgcard from "@/components/imgcard";
 import EndFooter from "@/components/endFooter";
 import Reveal from "@/components/reveal";
 import Home from "@/components/home";
+import { ArrowRight } from "@boxicons/react";
+import Link from "next/link";
 
 export default function Homepage() {
   const products = JEWELRY_ITEMS;
+  const currentProducts = products.slice(0, 5);
   const coverImageUrl =
     "https://images.unsplash.com/photo-1694062045776-f48d9b6de57e?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D";
   return (
@@ -87,7 +90,11 @@ export default function Homepage() {
               </div>
 
               <div className="hidden md:flex absolute inset-0 z-10 flex justify-start items-end p-10 text-base-content">
-                <Imgcard src={"/jewel_bag.jpeg"} alt={"lady"} style={"w-50 h-70"} />
+                <Imgcard
+                  src={"/jewel_bag.jpeg"}
+                  alt={"lady"}
+                  style={"w-50 h-70"}
+                />
               </div>
 
               <div className="absolute inset-0 z-10 flex justify-end items-end p-10 text-base-content">
@@ -132,11 +139,16 @@ export default function Homepage() {
         </Reveal>
         <Reveal>
           <section className="flex min-h-screen flex-col items-center bg-base-100 text-base-content border border-gray-300 py-20 w-full rounded-xl mt-10 ">
-            <h2 className="text-left text-3xl font-great-vibes">
-              Explore Our Jewelry Collection
-            </h2>
+            <div className="flex flex-row justify-between px-20 w-full">
+              <h2 className="text-left text-3xl font-great-vibes">
+                Explore Our Jewelry Collection
+              </h2>
+              <Link href="/products" className="flex flex-row gap-2">
+                View all <ArrowRight />
+              </Link>
+            </div>
             <div className="w-full flex flex-wrap gap-5 justify-center mt-10">
-              {products.map((product) => (
+              {currentProducts.map((product) => (
                 <Card
                   key={product.id}
                   thumbUrl={product.thumbUrl}
@@ -147,6 +159,7 @@ export default function Homepage() {
                   gemstone={product.gemstone}
                   metal={product.metal}
                   price={product.price}
+                  redirectUrl={`/products/${encodeURIComponent(product.id)}`}
                 />
               ))}
             </div>

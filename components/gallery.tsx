@@ -9,7 +9,8 @@ const Gallery = () => {
   const [copied, setCopied] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
 
-  const activeItem = JEWELRY_ITEMS[activeIndex];
+  const product = JEWELRY_ITEMS.slice(0, 5);
+  const activeItem = product[activeIndex];
 
   const handleNext = useCallback(() => {
     setActiveIndex((prev) => (prev + 1) % JEWELRY_ITEMS.length);
@@ -33,7 +34,7 @@ const Gallery = () => {
   return (
     <div className="flex flex-col lg:flex-row items-center justify-between w-full">
       <div className="flex flex-wrap items-center justify-center gap-4 overflow-x-auto py-6 px-4 no-scrollbar">
-        {JEWELRY_ITEMS.map((item, index) => {
+        {product.map((item, index) => {
           const isActive = index === activeIndex;
           return (
             <button
@@ -64,7 +65,7 @@ const Gallery = () => {
       </div>
 
       <div className="flex items-center gap-2 mt-2 px-4 py-2 justify-end">
-        {JEWELRY_ITEMS.map((_, index) => (
+        {product.map((_, index) => (
           <button
             key={index}
             onClick={() => setActiveIndex(index)}
