@@ -12,6 +12,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import React from "react";
 
+// 1. Tell Next.js all valid product routes to prerender at build time
+export async function generateStaticParams() {
+  return JEWELRY_ITEMS.flatMap((item) => [
+    { detail: item.id.toString() },
+    { detail: item.title },
+  ]);
+}
+
 function safeDecode(val: string): string {
   let decoded = val;
   try {
@@ -30,14 +38,12 @@ const Details = async ({ params }: { params: Promise<{ detail: string }> }) => {
   const resolvedParams = await params;
   const rawDetail = safeDecode(resolvedParams.detail);
 
-  // 1. Fetch item matching ID (or title fallback if legacy routes are used)
   const product = JEWELRY_ITEMS.find(
     (item) =>
       item.id.toString() === rawDetail ||
       item.title.toLowerCase() === rawDetail.toLowerCase(),
   );
 
-  // 2. Return 404 page if item doesn't exist
   if (!product) {
     notFound();
   }
