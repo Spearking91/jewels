@@ -48,7 +48,7 @@ const Home = () => {
                 handcrafted gold jewellery, designed
                 <br /> for the modern individual.
               </p>
-              <Link className="btn btn-primary" href={"/shop"}>
+              <Link className="btn btn-primary" href={"/products"}>
                 Shop Now
               </Link>
               <p className="py-6 text-primary font-bolds">

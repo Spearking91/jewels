@@ -2,23 +2,65 @@
 
 import Card from "@/components/Card";
 import { JEWELRY_ITEMS } from "@/lib/db";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 
 const ITEMS_PER_PAGE = 15;
 
-const Products = () => {
-  const products = JEWELRY_ITEMS;
-  const [currentPage, setCurrentPage] = useState(1);
+// Helper to parse price strings like "$1,200.00" into sortable numbers
+const parsePrice = (priceStr: string) => {
+  const num = parseFloat(priceStr.replace(/[^0-9.]/g, ""));
+  return isNaN(num) ? 0 : num;
+};
 
-  // Pagination calculations
-  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
+const Products = () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [priceSort, setPriceSort] = useState("default");
+
+  // Dynamically extract unique categories from JEWELRY_ITEMS
+  const categories = useMemo(() => {
+    const cats = JEWELRY_ITEMS.map((item) => item.category);
+    return ["All", ...Array.from(new Set(cats))];
+  }, []);
+
+  // Filter and sort products based on selected parameters
+  const filteredProducts = useMemo(() => {
+    let result = [...JEWELRY_ITEMS];
+
+    // Filter by Category
+    if (selectedCategory !== "All") {
+      result = result.filter((item) => item.category === selectedCategory);
+    }
+
+    // Sort by Price
+    if (priceSort === "low-high") {
+      result.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
+    } else if (priceSort === "high-low") {
+      result.sort((a, b) => parsePrice(b.price) - parsePrice(a.price));
+    }
+
+    return result;
+  }, [selectedCategory, priceSort]);
+
+  // Pagination calculations based on filtered results
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const currentProducts = products.slice(startIndex, endIndex);
+  const currentProducts = filteredProducts.slice(startIndex, endIndex);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    setCurrentPage(1); // Reset to page 1 on filter change
+  };
+
+  const handleSortChange = (sort: string) => {
+    setPriceSort(sort);
+    setCurrentPage(1); // Reset to page 1 on sort change
   };
 
   return (
@@ -30,7 +72,7 @@ const Products = () => {
             Curated Collection
           </span>
           <h1 className="text-5xl lg:text-6xl font-serif tracking-wide text-white">
-            Exquisite Earrings
+            Exquisite {selectedCategory === "All" ? "Pieces" : selectedCategory}
           </h1>
           <p className="text-sm text-base-content/70 max-w-md font-light">
             Discover modern artisan pieces designed with precision, beauty, and
@@ -48,34 +90,86 @@ const Products = () => {
 
       {/* 2. Product Grid Container */}
       <section className="w-full max-w-7xl pb-20">
-        <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/10">
+        {/* Toolbar: Counter & Interactive Filters */}
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8 pb-6 border-b border-white/10">
           <p className="text-sm tracking-wider text-base-content/60 font-mono">
-            SHOWING {startIndex + 1}–{Math.min(endIndex, products.length)} OF{" "}
-            {products.length} PIECES
+            {filteredProducts.length > 0
+              ? `SHOWING ${startIndex + 1}-${Math.min(endIndex, filteredProducts.length)} OF ${filteredProducts.length} PIECES`
+              : "NO PIECES FOUND"}
           </p>
-          <div className="text-xs tracking-widest text-primary uppercase font-medium">
-            Handcrafted Luxury
+
+          <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
+            {/* Category Filter Pills */}
+            <div className="flex items-center gap-2 overflow-x-auto py-1 max-w-full">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => handleCategoryChange(cat)}
+                  className={`px-3 py-1.5 rounded-full text-xs tracking-wider uppercase transition whitespace-nowrap border ${
+                    selectedCategory === cat
+                      ? "bg-primary text-black font-semibold border-primary shadow-lg shadow-primary/20"
+                      : "bg-black/40 text-base-content/70 border-white/10 hover:border-white/30"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            {/* Price Sort Dropdown */}
+            <div className="relative">
+              <select
+                value={priceSort}
+                onChange={(e) => handleSortChange(e.target.value)}
+                className="bg-black/40 border border-white/10 text-xs tracking-wider uppercase text-base-content px-4 py-2 rounded-xl focus:outline-none focus:border-primary/50 transition cursor-pointer"
+              >
+                <option
+                  value="default"
+                  className="bg-neutral text-base-content"
+                >
+                  Sort by Price
+                </option>
+                <option
+                  value="low-high"
+                  className="bg-neutral text-base-content"
+                >
+                  Price: Low to High
+                </option>
+                <option
+                  value="high-low"
+                  className="bg-neutral text-base-content"
+                >
+                  Price: High to Low
+                </option>
+              </select>
+            </div>
           </div>
         </div>
 
         {/* Grid layout ensuring structured spacing */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
-          {currentProducts.map((product) => (
-            <Card
-              key={product.id}
-              style="w-full max-w-sm !p-4 md:flex-col [&_h1]:!text-2xl [&_p]:!text-xs"
-              thumbUrl={product.thumbUrl}
-              title={product.title}
-              subtitle={product.subtitle}
-              description={product.description}
-              category={product.category}
-              gemstone={product.gemstone}
-              metal={product.metal}
-              price={product.price}
-              redirectUrl={`/products/${product.id}`}
-            />
-          ))}
-        </div>
+        {currentProducts.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
+            {currentProducts.map((product) => (
+              <Card
+                key={product.id}
+                style="w-full max-w-sm !p-4 md:flex-col [&_h1]:!text-2xl [&_p]:!text-xs"
+                thumbUrl={product.thumbUrl}
+                title={product.title}
+                subtitle={product.subtitle}
+                description={product.description}
+                category={product.category}
+                gemstone={product.gemstone}
+                metal={product.metal}
+                price={product.price}
+                redirectUrl={`/products/${product.id}`}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-24 text-base-content/50 font-serif text-lg">
+            No pieces match your selected filter criteria.
+          </div>
+        )}
 
         {/* 3. Pagination Controls */}
         {totalPages > 1 && (
