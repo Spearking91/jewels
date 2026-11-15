@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import Counter from "@/components/counter";
 import { addToCart } from "@/utils/cart";
 import { supabase } from "@/utils/supabase";
@@ -14,11 +15,11 @@ import Link from "next/link";
 import { notFound, useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
-export default function Details() {
+// Inner component that safely uses useParams() inside Suspense
+function ProductDetailsContent() {
   const params = useParams();
   const router = useRouter();
   
-  // Note: Matches the folder name [id] in app/products/[id]/page.tsx
   const productId = params?.id as string;
 
   const [product, setProduct] = useState<any>(null);
@@ -104,7 +105,7 @@ export default function Details() {
       : product.imageUrl || "https://images.unsplash.com/photo-1693212793204-bcea856c75fe";
 
   return (
-    <div className="min-h-screen bg-base-100 text-base-content px-6 lg:px-16 py-8 flex flex-col items-center">
+    <div className="min-h-screen bg-base-100 text-base-content px-6 lg:px-16 py-8 flex flex-col items-center w-full">
       {/* Navigation / Breadcrumb */}
       <div className="w-full max-w-7xl mb-8 flex items-center justify-between">
         <Link
@@ -234,5 +235,20 @@ export default function Details() {
         </div>
       </main>
     </div>
+  );
+}
+
+// Default export wrapped in Suspense to satisfy Next.js 16 build requirements
+export default function DetailsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-base-100 text-base-content">
+          <span className="loading loading-spinner loading-lg text-primary"></span>
+        </div>
+      }
+    >
+      <ProductDetailsContent />
+    </Suspense>
   );
 }
