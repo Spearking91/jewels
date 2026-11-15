@@ -90,12 +90,12 @@ const Card = ({
               Price
             </span>
             <span className="text-2xl font-serif text-primary font-medium">
-              {price}
+              GH₵{price}
             </span>
           </div>
           <div className="flex gap-2">
             <button
-              onClick={()=>router.push(redirectUrl)}
+              onClick={() => router.push(redirectUrl)}
               className="px-5 py-2.5 rounded-full bg-gradient-to-r from-primary/40 to-primary/80 text-black font-semibold text-xs tracking-wider uppercase hover:brightness-110 transition shadow-lg shadow-primary/20 flex items-center gap-2"
             >
               <ShoppingBag className="w-4 h-4" /> Acquire Piece

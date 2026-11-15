@@ -1,7 +1,8 @@
 import Navbar from "@/components/navbar";
 import GalleryCard from "@/components/galleryCard";
 import Gallery from "@/components/gallery";
-import { JEWELRY_ITEMS } from "@/lib/db";
+import { supabase } from "@/utils/supabase";
+import { ProductList } from "@/lib/db";
 import Card from "@/components/Card";
 import Image from "next/image";
 import Imgcard from "@/components/imgcard";
@@ -11,11 +12,26 @@ import Home from "@/components/home";
 import { ArrowRight } from "@boxicons/react";
 import Link from "next/link";
 
-export default function Homepage() {
-  const products = JEWELRY_ITEMS;
-  const currentProducts = products.slice(0, 5);
+// Ensures fresh products are fetched on each visit rather than serving a stale static cache
+// export const revalidate = 0;
+
+export default async function Homepage() {
+  // Fetch the latest 5 products from public.products
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  if (error) {
+    console.error("Error fetching homepage products:", error);
+  }
+
+  const currentProducts = (data as ProductList[]) ?? [];
+
   const coverImageUrl =
     "https://images.unsplash.com/photo-1694062045776-f48d9b6de57e?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D";
+
   return (
     <main className="flex min-h-screen flex-col items-center bg-base-100 text-base-content">
       <Home />
@@ -69,7 +85,7 @@ export default function Homepage() {
               {/* Optional background dimming overlay */}
               <div className="absolute inset-0 bg-black/70" />
 
-              {/* Content positioned precisely where you want it (top-right here) */}
+              {/* Content positioned precisely where you want it */}
               <div className="absolute inset-0 z-10 flex justify-start items-start p-10 text-base-content">
                 <div className="max-w-md text-left">
                   <p className="text-sm font-medium">
@@ -99,7 +115,6 @@ export default function Homepage() {
 
               <div className="absolute inset-0 z-10 flex justify-end items-end p-10 text-base-content">
                 <div className="max-w-md text-right ">
-                  {/* <Imgcard src={coverImageUrl} alt={"lady"} style={"w-50 h-70"} /> */}
                   <p className="text-xs font-medium">
                     Discover Elegant Jewellery Designed For Every Moment, <br />
                     Crafted To Add A Touch Of Timeless Beauty.
@@ -128,7 +143,7 @@ export default function Homepage() {
                   jewellery designs, from timeless classics to contemporary
                   statement pieces. Each piece is crafted with precision and
                   care, using high-quality materials to ensure lasting beauty.
-                  Whether you're looking for a special gift or a treat for
+                  Whether you&apos;re looking for a special gift or a treat for
                   yourself, we have something for everyone. Explore our
                   collection and discover the perfect piece to complement your
                   unique style.
@@ -148,20 +163,26 @@ export default function Homepage() {
               </Link>
             </div>
             <div className="w-full flex flex-wrap gap-5 justify-center mt-10">
-              {currentProducts.map((product) => (
-                <Card
-                  key={product.id}
-                  thumbUrl={product.thumbUrl}
-                  title={product.title}
-                  subtitle={product.subtitle}
-                  description={product.description}
-                  category={product.category}
-                  gemstone={product.gemstone}
-                  metal={product.metal}
-                  price={product.price}
-                  redirectUrl={`/products/${encodeURIComponent(product.id)}`}
-                />
-              ))}
+              {currentProducts.length > 0 ? (
+                currentProducts.map((product) => (
+                  <Card
+                    key={product.id}
+                    thumbUrl={product.imageUrl}
+                    title={product.title}
+                    subtitle={product.subtitle}
+                    description={product.description}
+                    category={product.category}
+                    gemstone={product.gemstone}
+                    metal={product.metal}
+                    price={product.selling_price}
+                    redirectUrl={`/products/${encodeURIComponent(product.id)}`}
+                  />
+                ))
+              ) : (
+                <p className="text-sm text-base-content/50 font-mono py-10">
+                  No pieces available at the moment.
+                </p>
+              )}
             </div>
           </section>
         </Reveal>

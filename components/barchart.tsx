@@ -16,7 +16,7 @@ const BarchartDays = ({ barData }: { barData: any }) => {
             tick={{ fontSize: 11, fill: "#9ca3af" }}
           />
           <Bar dataKey="value" radius={[6, 6, 6, 6]}>
-            {barData.map((entry, index) => (
+            {barData.map((entry:any, index: number) => (
               <Cell
                 key={`cell-${index}`}
                 fill={entry.highlight ? "#2563eb" : "#f1f5f9"}

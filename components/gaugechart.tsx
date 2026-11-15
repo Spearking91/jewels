@@ -19,7 +19,7 @@ const Gaugechart = ({ gaugeData }: { gaugeData: any }) => {
               paddingAngle={0}
               dataKey="value"
             >
-              {gaugeData.map((entry, index) => (
+              {gaugeData.map((entry: any, index: number) => (
                 <Cell key={`cell-${index}`} fill={entry.fill} />
               ))}
             </Pie>
