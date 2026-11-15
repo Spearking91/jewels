@@ -1,6 +1,8 @@
 "use client";
 
 import { CompanyImageUrl, CompanyName, CompanySlogan } from "@/lib/constants";
+import { MenuRight, ShoppingBagAlt } from "@boxicons/react";
+import Link from "next/link";
 import React, { useState } from "react";
 
 const TitleBar = () => {
@@ -20,21 +22,7 @@ const TitleBar = () => {
       <div className="collapse-title navbar p-3 lg:p-5 flex justify-between items-center">
         <div className="navbar-start flex items-center gap-2">
           <label htmlFor="navbar-1-toggle" className="btn btn-ghost lg:hidden">
-            <svg
-              aria-label="Menu"
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 6h16M4 12h8m-8 6h16"
-              />
-            </svg>
+            <MenuRight />
           </label>
 
           {/* Replaced rigid button with an auto-height anchor/div wrapper */}
@@ -58,7 +46,7 @@ const TitleBar = () => {
 
         {/* Desktop Menu */}
         <div className="navbar-center hidden lg:flex">
-          <ul className="menu menu-horizontal px-1 font-bold gap-2">
+          <ul className="menu menu-horizontal px-1 items-center font-bold gap-2">
             {listItems.map((item) => {
               const isActive = activeItem === item;
               return (
@@ -76,6 +64,11 @@ const TitleBar = () => {
                 </li>
               );
             })}
+            <li>
+              <Link href={"/contact"}>
+                <ShoppingBagAlt className="size-5 rounded-none transition-all " />
+              </Link>
+            </li>
           </ul>
         </div>
       </div>
@@ -98,6 +91,12 @@ const TitleBar = () => {
               </li>
             );
           })}
+          <li>
+            <Link href={"/contact"}>
+              <ShoppingBagAlt className="size-5 rounded-none transition-all " />{" "}
+              Shopping bag
+            </Link>
+          </li>
         </ul>
       </div>
     </div>

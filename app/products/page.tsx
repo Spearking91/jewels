@@ -1,8 +1,9 @@
 "use client";
 
 import Card from "@/components/Card";
-import { JEWELRY_ITEMS } from "@/lib/db";
-import React, { useState, useMemo } from "react";
+import { ProductList } from "@/lib/db";
+import { supabase } from "@/utils/supabase";
+import React, { useState, useMemo, useEffect } from "react";
 
 const ITEMS_PER_PAGE = 15;
 
@@ -12,20 +13,43 @@ const parsePrice = (priceStr: string) => {
   return isNaN(num) ? 0 : num;
 };
 
-const Products = () => {
+export default function Products() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [priceSort, setPriceSort] = useState("default");
+  const [productz, setProductz] = useState<ProductList[]>([]);
+  const [error, setError] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // Dynamically extract unique categories from JEWELRY_ITEMS
-  const categories = useMemo(() => {
-    const cats = JEWELRY_ITEMS.map((item) => item.category);
-    return ["All", ...Array.from(new Set(cats))];
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Supabase error fetching products:", error);
+        setError(error);
+      } else {
+        setProductz((data as ProductList[]) ?? []);
+      }
+      setLoading(false);
+    };
+
+    fetchProducts();
   }, []);
+
+  // Dynamically extract unique categories from fetched products
+  const categories = useMemo(() => {
+    const cats = productz.map((item) => item.category);
+    return ["All", ...Array.from(new Set(cats))];
+  }, [productz]);
 
   // Filter and sort products based on selected parameters
   const filteredProducts = useMemo(() => {
-    let result = [...JEWELRY_ITEMS];
+    let result = [...productz];
 
     // Filter by Category
     if (selectedCategory !== "All") {
@@ -34,13 +58,13 @@ const Products = () => {
 
     // Sort by Price
     if (priceSort === "low-high") {
-      result.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
+      result.sort((a, b) => parsePrice(a.selling_price) - parsePrice(b.selling_price));
     } else if (priceSort === "high-low") {
-      result.sort((a, b) => parsePrice(b.price) - parsePrice(a.price));
+      result.sort((a, b) => parsePrice(b.selling_price) - parsePrice(a.selling_price));
     }
 
     return result;
-  }, [selectedCategory, priceSort]);
+  }, [productz, selectedCategory, priceSort]);
 
   // Pagination calculations based on filtered results
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
@@ -62,6 +86,24 @@ const Products = () => {
     setPriceSort(sort);
     setCurrentPage(1); // Reset to page 1 on sort change
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-base-100 text-base-content">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-base-100 text-error">
+        <p>
+          Failed to load products. Please check your connection or database.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center bg-base-100 text-base-content px-5 lg:px-12 py-6">
@@ -153,14 +195,14 @@ const Products = () => {
               <Card
                 key={product.id}
                 style="w-full max-w-sm !p-4 md:flex-col [&_h1]:!text-2xl [&_p]:!text-xs"
-                thumbUrl={product.thumbUrl}
+                thumbUrl={product.imageUrl}
                 title={product.title}
                 subtitle={product.subtitle}
                 description={product.description}
                 category={product.category}
                 gemstone={product.gemstone}
                 metal={product.metal}
-                price={product.price}
+                price={product.selling_price}
                 redirectUrl={`/products/${product.id}`}
               />
             ))}
@@ -213,6 +255,4 @@ const Products = () => {
       </section>
     </div>
   );
-};
-
-export default Products;
+}

@@ -4,6 +4,7 @@ import "./globals.css";
 import Footer from "@/components/footer";
 import { Analytics } from "@vercel/analytics/next";
 import { Suspense } from "react";
+import AnalyticsTracker from "@/components/AnalyticsTracker";
 
 export const cormorantGaramond = Cormorant_Garamond({
   weight: "400",
@@ -43,6 +44,7 @@ export default function RootLayout({
         {/* Vercel Analytics wrapped in Suspense and placed inside body */}
         <Suspense fallback={null}>
           <Analytics />
+          <AnalyticsTracker />
         </Suspense>
       </body>
     </html>

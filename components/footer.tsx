@@ -1,3 +1,4 @@
+import { CompanyName } from "@/lib/constants";
 import { Facebook, TwitterX, Whatsapp, X } from "@boxicons/react";
 import React from "react";
 
@@ -12,7 +13,7 @@ const Footer = () => {
           <a className="link link-hover">Press kit</a>
         </nav>
 
-        <p>All right reserved © 2026 Jewel</p>
+        <p>All right reserved © 2026 {CompanyName}</p>
       </aside>
       <nav className="grid-flow-col gap-4 md:place-self-center md:justify-self-end">
         <a>

@@ -1,24 +1,17 @@
+"use client";
+
+import Counter from "@/components/counter";
 import { JEWELRY_ITEMS } from "@/lib/db";
 import {
   ArrowLeft,
   CheckCircle,
-  Heart,
-  Shield,
-  ShoppingBag,
+  ShoppingBagAlt,
   Sparkles,
   Truck,
 } from "@boxicons/react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import React from "react";
-
-// 1. Tell Next.js all valid product routes to prerender at build time
-export async function generateStaticParams() {
-  return JEWELRY_ITEMS.flatMap((item) => [
-    { detail: item.id.toString() },
-    { detail: item.title },
-  ]);
-}
+import { notFound, useParams } from "next/navigation";
+import React, { useState } from "react";
 
 function safeDecode(val: string): string {
   let decoded = val;
@@ -34,9 +27,9 @@ function safeDecode(val: string): string {
   return decoded;
 }
 
-const Details = async ({ params }: { params: Promise<{ detail: string }> }) => {
-  const resolvedParams = await params;
-  const rawDetail = safeDecode(resolvedParams.detail);
+export default function Details() {
+  const params = useParams();
+  const rawDetail = safeDecode((params?.detail as string) || "");
 
   const product = JEWELRY_ITEMS.find(
     (item) =>
@@ -44,9 +37,15 @@ const Details = async ({ params }: { params: Promise<{ detail: string }> }) => {
       item.title.toLowerCase() === rawDetail.toLowerCase(),
   );
 
+  const [quantity, setQuantity] = useState(1);
+
   if (!product) {
     notFound();
   }
+
+  const handleIncrement = () => setQuantity((prev) => prev + 1);
+  const handleDecrement = () =>
+    setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
   return (
     <div className="min-h-screen bg-base-100 text-base-content px-6 lg:px-16 py-8 flex flex-col items-center">
@@ -74,15 +73,6 @@ const Details = async ({ params }: { params: Promise<{ detail: string }> }) => {
               className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
-
-            <div className="absolute top-6 right-6">
-              <button
-                aria-label="Add to wishlist"
-                className="p-3.5 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 hover:scale-110 transition-all shadow-xl"
-              >
-                <Heart className="w-5 h-5 text-white" />
-              </button>
-            </div>
 
             <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between">
               <span className="text-xs font-mono tracking-widest uppercase text-white/70 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10">
@@ -141,15 +131,31 @@ const Details = async ({ params }: { params: Promise<{ detail: string }> }) => {
             </div>
           </div>
 
-          {/* Action Area */}
-          <div className="space-y-3 pt-2">
-            <button className="w-full py-4 rounded-xl bg-gradient-to-r from-primary/80 via-primary to-primary/90 text-black font-semibold text-sm tracking-widest uppercase hover:brightness-110 active:scale-[0.99] transition shadow-xl shadow-primary/20 flex items-center justify-center gap-3">
-              <ShoppingBag className="w-5 h-5" /> Acquire Piece
+          {/* Action Area with Counter & Add to Bag */}
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center gap-4">
+              <span className="text-xs font-mono uppercase tracking-widest text-base-content/60">
+                Quantity:
+              </span>
+              <Counter
+                quantity={quantity}
+                onIncrement={handleIncrement}
+                onDecrement={handleDecrement}
+              />
+            </div>
+
+            <button
+              onClick={() =>
+                console.log(`Added ${quantity} of ${product.title} to bag`)
+              }
+              className="w-full py-4 rounded-xl bg-gradient-to-r from-primary/80 via-primary to-primary/90 text-black font-semibold text-sm tracking-widest uppercase hover:brightness-110 active:scale-[0.99] transition shadow-xl shadow-primary/20 flex items-center justify-center gap-3"
+            >
+              <ShoppingBagAlt className="w-5 h-5" /> Add to bag ({quantity})
             </button>
           </div>
 
           {/* Trust Highlights */}
-          <div className="grid grid-cols-3 gap-2 pt-4 text-center border-t border-white/10">
+          <div className="grid grid-cols-2 gap-2 pt-4 text-center border-t border-white/10">
             <div className="flex flex-col items-center gap-1">
               <Truck className="w-5 h-5 text-primary/70" />
               <span className="text-[10px] text-base-content/60 uppercase tracking-wider">
@@ -157,15 +163,9 @@ const Details = async ({ params }: { params: Promise<{ detail: string }> }) => {
               </span>
             </div>
             <div className="flex flex-col items-center gap-1">
-              <Shield className="w-5 h-5 text-primary/70" />
-              <span className="text-[10px] text-base-content/60 uppercase tracking-wider">
-                Lifetime Warranty
-              </span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
               <CheckCircle className="w-5 h-5 text-primary/70" />
               <span className="text-[10px] text-base-content/60 uppercase tracking-wider">
-                Certificate Incl.
+                Authentic
               </span>
             </div>
           </div>
@@ -173,6 +173,4 @@ const Details = async ({ params }: { params: Promise<{ detail: string }> }) => {
       </main>
     </div>
   );
-};
-
-export default Details;
+}
