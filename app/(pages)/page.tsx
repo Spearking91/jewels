@@ -1,10 +1,8 @@
-import Navbar from "@/components/navbar";
-import GalleryCard from "@/components/galleryCard";
+import { Suspense } from "react";
 import Gallery from "@/components/gallery";
 import { supabase } from "@/utils/supabase";
 import { ProductList } from "@/lib/db";
 import Card from "@/components/Card";
-import Image from "next/image";
 import Imgcard from "@/components/imgcard";
 import EndFooter from "@/components/endFooter";
 import Reveal from "@/components/reveal";
@@ -12,12 +10,8 @@ import Home from "@/components/home";
 import { ArrowRight } from "@boxicons/react";
 import Link from "next/link";
 
-// Ensures fresh products are fetched on each visit rather than serving a stale static cache
-// export const revalidate = 0;
-export const dynamics = "force-dynamic";
-
-export default async function Homepage() {
-  // Fetch the latest 5 products from public.products
+// Separate async component for products list to enable proper Suspense streaming
+async function LatestProductsSection() {
   const { data, error } = await supabase
     .from("products")
     .select("*")
@@ -30,6 +24,33 @@ export default async function Homepage() {
 
   const currentProducts = (data as ProductList[]) ?? [];
 
+  return (
+    <div className="w-full flex flex-wrap gap-5 justify-center mt-10">
+      {currentProducts.length > 0 ? (
+        currentProducts.map((product) => (
+          <Card
+            key={product.id}
+            thumbUrl={product.imageUrl}
+            title={product.title}
+            subtitle={product.subtitle}
+            description={product.description}
+            category={product.category}
+            gemstone={product.gemstone}
+            metal={product.metal}
+            price={product.selling_price}
+            redirectUrl={`/products/${encodeURIComponent(product.id)}`}
+          />
+        ))
+      ) : (
+        <p className="text-sm text-base-content/50 font-mono py-10">
+          No pieces available at the moment.
+        </p>
+      )}
+    </div>
+  );
+}
+
+export default function Homepage() {
   const coverImageUrl =
     "https://images.unsplash.com/photo-1694062045776-f48d9b6de57e?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D";
 
@@ -37,31 +58,26 @@ export default async function Homepage() {
     <main className="flex min-h-screen flex-col items-center bg-base-100 text-base-content">
       <Home />
       <div
-        className="hero min-h-screen "
+        className="hero min-h-screen"
         style={{
           backgroundImage: `url(${coverImageUrl})`,
         }}
       >
-        <div className="hero-overlay inset-0 bg-gradient-to-b from-[#050507] via-[#050507]/80 via-[#050507]/30 to-[#050507]/80">
-          {/* <Navbar /> */}
-        </div>
+        <div className="hero-overlay inset-0 bg-gradient-to-b from-[#050507] via-[#050507]/80 via-[#050507]/30 to-[#050507]/80" />
         <div className="hero-content text-neutral-content text-center">
           <Reveal>
             <section className="border border-gray-300 p-5 w-full rounded-xl">
-              <h1
-                className={"text-6xl text-left text-primary font-great-vibes"}
-              >
+              <h1 className={"text-6xl text-left text-primary font-great-vibes"}>
                 Discover Modern <br />
                 Jewellery
               </h1>
               <div className="w-full flex flex-row items-center gap-5">
-                {/* {Display background window} */}
                 <div className="hidden lg:flex">
                   <Imgcard src={coverImageUrl} alt={"lady"} style={undefined} />
                 </div>
                 <div className="w-full flex flex-col gap-5">
                   <Gallery />
-                  <p className=" font-semibold text-left text-base-content/80">
+                  <p className="font-semibold text-left text-base-content/80">
                     Explore Timeless Jewellery Crafted To Elevate Every Look.
                     Discover Elegant Pieces Designed With Detail, Beauty, And
                     Modern Style In
@@ -73,20 +89,16 @@ export default async function Homepage() {
         </div>
       </div>
 
-      <div className="px-5 w-full ">
-        {/* {spiral} */}
+      <div className="px-5 w-full">
         <Reveal>
-          <section className=" min-h-screen flex justify-center items-center w-full md:p-5">
+          <section className="min-h-screen flex justify-center items-center w-full md:p-5">
             <div
-              className="  overflow-hidden border border-gray-300 rounded-lg min-h-screen lg:max-w-3/4 relative w-full bg-cover bg-center"
+              className="overflow-hidden border border-gray-300 rounded-lg min-h-screen lg:max-w-3/4 relative w-full bg-cover bg-center"
               style={{
                 backgroundImage: "url(/jewel_box.jpeg)",
               }}
             >
-              {/* Optional background dimming overlay */}
               <div className="absolute inset-0 bg-black/70" />
-
-              {/* Content positioned precisely where you want it */}
               <div className="absolute inset-0 z-10 flex justify-start items-start p-10 text-base-content">
                 <div className="max-w-md text-left">
                   <p className="text-sm font-medium">
@@ -115,7 +127,7 @@ export default async function Homepage() {
               </div>
 
               <div className="absolute inset-0 z-10 flex justify-end items-end p-10 text-base-content">
-                <div className="max-w-md text-right ">
+                <div className="max-w-md text-right">
                   <p className="text-xs font-medium">
                     Discover Elegant Jewellery Designed For Every Moment, <br />
                     Crafted To Add A Touch Of Timeless Beauty.
@@ -125,9 +137,10 @@ export default async function Homepage() {
             </div>
           </section>
         </Reveal>
+        
         <Reveal>
-          <section className=" min-h-screen flex items-center justify-center">
-            <div className="flex flex-col max-w-2/3  lg:flex-row-reverse">
+          <section className="min-h-screen flex items-center justify-center">
+            <div className="flex flex-col max-w-2/3 lg:flex-row-reverse">
               <img
                 alt="bracelet"
                 src="https://images.unsplash.com/photo-1573408301185-9146fe634ad0?q=80&w=2675&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D"
@@ -153,8 +166,9 @@ export default async function Homepage() {
             </div>
           </section>
         </Reveal>
+
         <Reveal>
-          <section className="flex min-h-screen flex-col items-center bg-base-100 text-base-content border border-gray-300 py-20 w-full rounded-xl mt-10 ">
+          <section className="flex min-h-screen flex-col items-center bg-base-100 text-base-content border border-gray-300 py-20 w-full rounded-xl mt-10">
             <div className="flex flex-row justify-between px-20 w-full">
               <h2 className="text-left text-3xl font-great-vibes">
                 Explore Our Jewelry Collection
@@ -163,28 +177,17 @@ export default async function Homepage() {
                 View all <ArrowRight />
               </Link>
             </div>
-            <div className="w-full flex flex-wrap gap-5 justify-center mt-10">
-              {currentProducts.length > 0 ? (
-                currentProducts.map((product) => (
-                  <Card
-                    key={product.id}
-                    thumbUrl={product.imageUrl}
-                    title={product.title}
-                    subtitle={product.subtitle}
-                    description={product.description}
-                    category={product.category}
-                    gemstone={product.gemstone}
-                    metal={product.metal}
-                    price={product.selling_price}
-                    redirectUrl={`/products/${encodeURIComponent(product.id)}`}
-                  />
-                ))
-              ) : (
-                <p className="text-sm text-base-content/50 font-mono py-10">
-                  No pieces available at the moment.
-                </p>
-              )}
-            </div>
+            
+            {/* Suspense wrapper satisfies Next.js 16 cache requirements */}
+            <Suspense
+              fallback={
+                <div className="py-20 flex justify-center w-full">
+                  <span className="loading loading-spinner loading-md text-primary"></span>
+                </div>
+              }
+            >
+              <LatestProductsSection />
+            </Suspense>
           </section>
         </Reveal>
 
