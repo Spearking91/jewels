@@ -1,8 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-// MUST match the ID in your page component
-const AUTHORIZED_ADMIN_ID = "adf0e995-8175-4631-bfde-0c8a6e26a48a";
+// List of authorized admin IDs from environment variables
+const AUTHORIZED_ADMIN_IDS = [
+  process.env.SUPERADMIN,
+  process.env.ADMIN,
+].filter(Boolean); // Filters out undefined/empty variables
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -31,14 +34,11 @@ export async function middleware(request: NextRequest) {
       },
     },
   );
+
   const {
     data: { user },
     error,
   } = await supabase.auth.getUser();
-
-  console.log("Middleware User ID:", user?.id);
-  console.log("Middleware Auth Error:", error?.message);
-  console.log("Matches Authorized Admin?", user?.id === AUTHORIZED_ADMIN_ID);
 
   const isTryingToAccessAdmin =
     request.nextUrl.pathname === "/sudosu" ||
@@ -51,7 +51,10 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
-    if (user.id !== AUTHORIZED_ADMIN_ID) {
+    // Check if user ID is included in the admin array
+    const isAuthorized = user && AUTHORIZED_ADMIN_IDS.includes(user.id);
+
+    if (!isAuthorized) {
       const unauthorizedUrl = request.nextUrl.clone();
       unauthorizedUrl.pathname = "/";
       return NextResponse.redirect(unauthorizedUrl);
@@ -61,7 +64,6 @@ export async function middleware(request: NextRequest) {
   return supabaseResponse;
 }
 
-// Ensure both exact route and subpaths are matched
 export const config = {
   matcher: ["/sudosu", "/sudosu/:path*"],
 };

@@ -158,15 +158,7 @@ export default function Navbar() {
                   {user.email}
                 </p>
               </li>
-              <li className="mt-1">
-                <Link
-                  href="/profile"
-                  className="rounded-xl py-2 gap-2 text-xs text-base-content/70"
-                >
-                  <User className="size-4 text-base-content/70" />
-                  Profile
-                </Link>
-              </li>
+
               <li>
                 <Link
                   href="/sudosu/profile"

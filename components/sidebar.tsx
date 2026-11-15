@@ -39,19 +39,19 @@ const Sidebar = ({ children }: SidebarProps) => {
       badge: "",
     },
     // { Icon: Candlestick, label: "Stock", href: "/stock", badge: "46" },
-    { Icon: FileDetail, label: "Content", href: "/content", badge: "" },
+    // { Icon: FileDetail, label: "Content", href: "/content", badge: "" },
   ];
 
   const financeTabs = [
     { Icon: CreditCard, label: "Invoices", href: "/invoices" },
-    { Icon: ArrowLeftRight, label: "Transactions", href: "/transactions" },
-    { Icon: File, label: "Reports", href: "/reports" },
-    { Icon: BarChart, label: "Analytics", href: "/analytics" },
-    { Icon: PriceTag, label: "Discounts", href: "/discounts" },
+    // { Icon: ArrowLeftRight, label: "Transactions", href: "/transactions" },
+    // { Icon: File, label: "Reports", href: "/reports" },
+    // { Icon: BarChart, label: "Analytics", href: "/analytics" },
+    // { Icon: PriceTag, label: "Discounts", href: "/discounts" },
   ];
 
   const bottomTabs = [
-    { Icon: Cog, label: "Settings", href: "/settings" },
+    { Icon: Cog, label: "Settings", href: "/sudosu/profile" },
     { Icon: HelpCircle, label: "Help & Support", href: "/support" },
   ];
 

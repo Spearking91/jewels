@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase";
 import { User, Phone, CheckCircle, Asterisk } from "@boxicons/react";
 
-export default function ProfilePage() {
+export default function Profile() {
   const router = useRouter();
 
   // State management
