@@ -1,25 +1,79 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { CompanyImageLogoUrl, CompanyName } from "@/lib/constants";
+import { supabase } from "@/utils/supabase";
+import { useRouter } from "next/navigation";
 import {
-  Bell,
   DockLeft,
-  Magento,
-  Moon,
   Search,
   Sun,
+  Moon,
+  Bell,
   User,
   Cog,
-  ArrowOutLeftSquareHalf,
+  ArrowRightSquare,
 } from "@boxicons/react";
-import Avatar from "./avatar";
-import { CompanyImageLogoUrl, CompanyName } from "@/lib/constants";
 
-const Navbar = () => {
+export default function Navbar() {
+  const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    // Fetch initial session & user profile using standard promises (.then)
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+      if (user) {
+        supabase
+          .from("users")
+          .select("*")
+          .eq("id", user.id)
+          .single()
+          .then(({ data }) => {
+            setProfile(data);
+          });
+      }
+    });
+
+    // Listen for auth state changes (login, logout, token refresh)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      if (currentUser) {
+        supabase
+          .from("users")
+          .select("*")
+          .eq("id", currentUser.id)
+          .single()
+          .then(({ data }) => {
+            setProfile(data);
+          });
+      } else {
+        setProfile(null);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleSignOut = (e: React.FormEvent) => {
+    e.preventDefault();
+    supabase.auth.signOut().then(() => {
+      router.push("/login");
+      router.refresh();
+    });
+  };
+
   return (
     <div className="navbar bg-base-100/80 backdrop-blur-md sticky top-0 z-20 px-4 md:px-6 border-b border-base-200/80 justify-between">
       {/* Left Section: Mobile Drawer Toggle & Logo */}
       <div className="navbar-start w-auto lg:w-1/4">
-        {/* Mobile Sidebar Toggle Button */}
         <label
           htmlFor="my-drawer-4"
           aria-label="open sidebar"
@@ -28,9 +82,8 @@ const Navbar = () => {
           <DockLeft className="size-5" />
         </label>
 
-        {/* Mobile Brand Logo */}
         <div className="flex items-center gap-2 lg:hidden">
-          <div className=" rounded-lg ">
+          <div className="rounded-lg">
             <img
               src={CompanyImageLogoUrl}
               alt="companyLogo"
@@ -43,7 +96,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Center Section: Search Bar with Cmd+K Badge */}
+      {/* Center Section: Search Bar */}
       <div className="navbar-center hidden md:flex flex-1 max-w-md justify-center">
         <div className="relative w-full">
           <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-base-content/40">
@@ -64,65 +117,84 @@ const Navbar = () => {
 
       {/* Right Section: Theme Swap, Notifications & User Profile */}
       <div className="navbar-end w-auto lg:w-1/4 gap-1 sm:gap-2">
-        {/* Theme Controller (Sun / Moon) */}
         <label className="swap swap-rotate btn btn-ghost btn-circle btn-sm text-base-content/70 hover:text-base-content">
           <input type="checkbox" className="theme-controller" value="night" />
-          {/* Sun icon for light mode */}
           <Sun className="swap-off size-5" />
-          {/* Moon icon for dark mode */}
           <Moon className="swap-on size-5" />
         </label>
 
-        {/* Notification Button with Dot Indicator */}
         <button className="btn btn-ghost btn-circle btn-sm relative text-base-content/70 hover:text-base-content">
           <Bell className="size-5" />
           <span className="absolute top-1.5 right-1.5 size-2 bg-primary rounded-full ring-2 ring-base-100" />
         </button>
 
         {/* User Profile Dropdown */}
-        <div className="dropdown dropdown-end ml-1">
-          <div
-            tabIndex={0}
-            role="button"
-            className="btn btn-ghost btn-circle btn-sm avatar"
-          >
-            <div className="w-8 rounded-full ring-1 ring-base-300/80">
-              <Avatar />
+        {user ? (
+          <div className="dropdown dropdown-end ml-1">
+            <div
+              tabIndex={0}
+              role="button"
+              className="btn btn-ghost btn-circle btn-sm avatar"
+            >
+              <div className="w-8 rounded-full ring-1 ring-base-300/80">
+                <img
+                  src={
+                    profile?.avatar_url ||
+                    "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
+                  }
+                  alt="Avatar"
+                />
+              </div>
             </div>
+            <ul
+              tabIndex={0}
+              className="dropdown-content menu menu-sm z-[1] mt-2 p-2 shadow-lg bg-base-100 rounded-2xl w-52 border border-base-200"
+            >
+              <li className="px-3 py-2 border-b border-base-200 text-base-content">
+                <p className="font-bold text-xs p-0">
+                  {profile?.username || "User"}
+                </p>
+                <p className="text-[11px] text-base-content/50 p-0 font-normal">
+                  {user.email}
+                </p>
+              </li>
+              <li className="mt-1">
+                <Link
+                  href="/profile"
+                  className="rounded-xl py-2 gap-2 text-xs text-base-content/70"
+                >
+                  <User className="size-4 text-base-content/70" />
+                  Profile
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/sudosu/profile"
+                  className="rounded-xl py-2 gap-2 text-xs text-base-content/70"
+                >
+                  <Cog className="size-4 text-base-content/70" />
+                  Settings
+                </Link>
+              </li>
+              <li className="border-t border-base-200/80 mt-1 pt-1">
+                <form onSubmit={handleSignOut} className="w-full">
+                  <button
+                    type="submit"
+                    className="rounded-xl py-2 gap-2 text-xs text-error hover:bg-error/10 w-full text-left flex items-center"
+                  >
+                    <ArrowRightSquare className="size-4" />
+                    Logout
+                  </button>
+                </form>
+              </li>
+            </ul>
           </div>
-          <ul
-            tabIndex={0}
-            className="dropdown-content menu menu-sm z-[1] mt-2 p-2 shadow-lg bg-base-100 rounded-2xl w-52 border border-base-200"
-          >
-            <li className="px-3 py-2 border-b border-base-200 text-base-content">
-              <p className="font-bold text-xs p-0">Kelvin Acquah</p>
-              <p className="text-[11px] text-base-content/50 p-0 font-normal">
-                kelvin@shopeers.com
-              </p>
-            </li>
-            <li className="mt-1">
-              <a className="rounded-xl py-2 gap-2 text-xs text-base-content/70">
-                <User className="size-4 text-base-content/70" />
-                Profile
-              </a>
-            </li>
-            <li>
-              <a className="rounded-xl py-2 gap-2 text-xs text-base-content/70">
-                <Cog className="size-4 text-base-content/70" />
-                Settings
-              </a>
-            </li>
-            <li className="border-t border-base-200/80 mt-1 pt-1">
-              <a className="rounded-xl py-2 gap-2 text-xs text-error hover:bg-error/10">
-                <ArrowOutLeftSquareHalf className="size-4" />
-                Logout
-              </a>
-            </li>
-          </ul>
-        </div>
+        ) : (
+          <Link href="/login" className="btn btn-sm btn-primary text-white">
+            Sign In
+          </Link>
+        )}
       </div>
     </div>
   );
-};
-
-export default Navbar;
+}

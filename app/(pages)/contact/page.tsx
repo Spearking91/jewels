@@ -1,7 +1,7 @@
 "use client";
 
 import { Instagram, Tiktok, Whatsapp, Copy, Check } from "@boxicons/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const QUICK_MESSAGES = [
   "Hi! I'd like to check product availability.",
@@ -14,9 +14,16 @@ export default function Contact() {
   const [message, setMessage] = useState("");
   const [copied, setCopied] = useState(false);
 
-  // International format without '+' or leading '0' (Ghana +233)
-  const whatsappNumber = "233123456789";
-  const displayPhone = "012 345 6789";
+  useEffect(() => {
+    const savedOrder = sessionStorage.getItem("checkout_order");
+    if (savedOrder) {
+      setMessage(savedOrder);
+      sessionStorage.removeItem("checkout_order");
+    }
+  }, []);
+
+  const whatsappNumber = "233558792803";
+  const displayPhone = "055 879 2803";
 
   const socialLinks = [
     {
@@ -68,14 +75,12 @@ export default function Contact() {
             Direct Store Support
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
-            Get in Touch
+            Complete Your Order
           </h1>
           <p className="py-4 text-base-content/80 text-lg max-w-md mx-auto lg:mx-0">
-            Have a question about a product or ready to place an order? Message
-            the owner directly on WhatsApp or connect via social media.
+            Your order invoice PDF has been downloaded to your device. Review your order details in the message box and send them to WhatsApp, then attach your downloaded PDF!
           </p>
 
-          {/* Clickable Social & Contact Cards */}
           <div className="flex flex-col gap-3 mt-4 max-w-md mx-auto lg:mx-0">
             {socialLinks.map((item) => (
               <a
@@ -104,7 +109,6 @@ export default function Contact() {
               </a>
             ))}
 
-            {/* Quick Copy Phone Button */}
             <button
               type="button"
               onClick={handleCopyPhone}
@@ -129,9 +133,9 @@ export default function Contact() {
         <div className="card bg-base-100 w-full max-w-md shrink-0 shadow-2xl border border-base-300">
           <form onSubmit={handleSend} className="card-body gap-4">
             <div>
-              <h2 className="card-title text-xl">Send a WhatsApp Message</h2>
+              <h2 className="card-title text-xl">WhatsApp Checkout</h2>
               <p className="text-xs text-base-content/60 mt-1">
-                Your message will open directly in WhatsApp.
+                Your order summary is pre-filled below. Send it and attach your PDF invoice!
               </p>
             </div>
 
@@ -139,8 +143,7 @@ export default function Contact() {
             <div className="form-control">
               <label className="label py-1">
                 <span className="label-text font-medium">
-                  Your Name{" "}
-                  <span className="text-base-content/40">(Optional)</span>
+                  Your Name <span className="text-base-content/40">(Optional)</span>
                 </span>
               </label>
               <input
@@ -174,15 +177,15 @@ export default function Contact() {
             {/* Message Textarea */}
             <div className="form-control">
               <label className="label py-1">
-                <span className="label-text font-medium">Message</span>
+                <span className="label-text font-medium">Order Message</span>
               </label>
               <textarea
                 required
-                rows={4}
+                rows={7}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Tell us which product you're interested in..."
-                className="textarea textarea-bordered w-full resize-none"
+                placeholder="Order details..."
+                className="textarea textarea-bordered w-full text-xs font-mono"
               />
             </div>
 
@@ -192,7 +195,7 @@ export default function Contact() {
               className="btn btn-success text-white mt-2 w-full gap-2"
             >
               <Whatsapp className="size-5" />
-              Continue to WhatsApp
+              Send Order to WhatsApp
             </button>
           </form>
         </div>

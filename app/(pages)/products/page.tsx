@@ -58,9 +58,13 @@ export default function Products() {
 
     // Sort by Price
     if (priceSort === "low-high") {
-      result.sort((a, b) => parsePrice(a.selling_price) - parsePrice(b.selling_price));
+      result.sort(
+        (a, b) => parsePrice(a.selling_price) - parsePrice(b.selling_price),
+      );
     } else if (priceSort === "high-low") {
-      result.sort((a, b) => parsePrice(b.selling_price) - parsePrice(a.selling_price));
+      result.sort(
+        (a, b) => parsePrice(b.selling_price) - parsePrice(a.selling_price),
+      );
     }
 
     return result;
@@ -203,7 +207,7 @@ export default function Products() {
                 gemstone={product.gemstone}
                 metal={product.metal}
                 price={product.selling_price}
-                redirectUrl={`/products/${product.id}`}
+                redirectUrl={`/products/${encodeURIComponent(product.id)}`}
               />
             ))}
           </div>

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Geist, Great_Vibes } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 import Footer from "@/components/footer";
 import { Analytics } from "@vercel/analytics/next";
 import { Suspense } from "react";

@@ -26,6 +26,7 @@ import BarchartDays from "@/components/barchart";
 import Gaugechart from "@/components/gaugechart";
 import { Card, ProductList } from "@/lib/db";
 import { supabase } from "@/utils/supabase";
+import { connection } from "next/server";
 
 // Ensure Vercel always fetches fresh analytics on request
 export const dynamic = "force-dynamic";
@@ -63,7 +64,8 @@ const simple = [
 
 // Helper to calculate percentage change safely
 function calcGrowth(current: number, previous: number) {
-  if (previous === 0) return { pct: current > 0 ? "100%" : "0%", isPositive: true };
+  if (previous === 0)
+    return { pct: current > 0 ? "100%" : "0%", isPositive: true };
   const diff = ((current - previous) / previous) * 100;
   return {
     pct: `${Math.abs(diff).toFixed(1)}%`,
@@ -73,10 +75,16 @@ function calcGrowth(current: number, previous: number) {
 
 // Fetch live analytics & product stats on the server
 async function getDashboardMetrics() {
+  await connection(); // <-- 2. Await connection here to declare this as a dynamic request-time call
+
   const now = new Date();
   const threeMinsAgo = new Date(now.getTime() - 3 * 60 * 1000).toISOString();
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
-  const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000).toISOString();
+  const thirtyDaysAgo = new Date(
+    now.getTime() - 30 * 24 * 60 * 60 * 1000,
+  ).toISOString();
+  const sixtyDaysAgo = new Date(
+    now.getTime() - 60 * 24 * 60 * 60 * 1000,
+  ).toISOString();
 
   const [onlineRes, recentEventsRes, productsRes] = await Promise.all([
     // 1. Active sessions in last 3 minutes
@@ -100,7 +108,7 @@ async function getDashboardMetrics() {
 
   // --- Calculate Online Now ---
   const onlineSessions = new Set(
-    (onlineRes.data ?? []).map((row) => row.session_id)
+    (onlineRes.data ?? []).map((row) => row.session_id),
   );
   const currentlyOnline = onlineSessions.size;
 
@@ -129,7 +137,7 @@ async function getDashboardMetrics() {
   const allProducts = (productsRes.data as ProductList[]) ?? [];
   const totalStock = allProducts.reduce(
     (sum, item) => sum + (Number(item.quantity) || 0),
-    0
+    0,
   );
   const lowStockProducts = allProducts
     .filter((item) => Number(item.quantity) < 10)
@@ -193,7 +201,7 @@ export default async function Dashboard() {
             <span>Last 30 Days</span>
           </div>
 
-          <div className="dropdown dropdown-end">
+          {/* <div className="dropdown dropdown-end">
             <div
               tabIndex={0}
               role="button"
@@ -202,13 +210,13 @@ export default async function Dashboard() {
               <span>Last 30 days</span>
               <ChevronDown className="w-3.5 h-3.5 opacity-60" />
             </div>
-          </div>
-
+          </div> */}
+          {/* 
           <button className="btn btn-sm btn-outline border-base-300 normal-case font-normal gap-1 bg-base-100">
             <Plus className="w-4 h-4" />
             Add widget
-          </button>
-          <button className="btn btn-sm btn-primary normal-case font-medium gap-1 text-white">
+          </button> */}
+          <button className="btn btn-sm btn-primary normal-case font-medium gap-1 ">
             <ArrowDownLeftStrokeSquare className="w-4 h-4" />
             Export
           </button>
