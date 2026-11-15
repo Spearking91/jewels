@@ -14,6 +14,7 @@ import Link from "next/link";
 
 // Ensures fresh products are fetched on each visit rather than serving a stale static cache
 // export const revalidate = 0;
+export const dynamics = "force-dynamic";
 
 export default async function Homepage() {
   // Fetch the latest 5 products from public.products
