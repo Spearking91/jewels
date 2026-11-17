@@ -41,7 +41,11 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col font-cormorant-garamond text-base-content">
         <CartDrawer>
-          <TitleBar />
+          <Suspense
+            fallback={<div className="h-20 bg-base-200 animate-pulse" />}
+          >
+            <TitleBar />
+          </Suspense>
           {children}
         </CartDrawer>
         <Footer />

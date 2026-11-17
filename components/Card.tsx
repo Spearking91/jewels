@@ -75,11 +75,19 @@ const Card = ({
 
         <div className="pt-2 border-t border-white/10 space-y-1.5 text-xs text-base-content/70">
           <p>
-            <span className="text-primary/70 font-medium">Gemstone:</span>{" "}
+            <span
+              className={`${gemstone === "" ? "hidden" : "flex"} text-primary/70 font-medium`}
+            >
+              Gemstone:
+            </span>{" "}
             {gemstone}
           </p>
           <p>
-            <span className="text-primary/70 font-medium">Craft Metal:</span>{" "}
+            <span
+              className={`${metal === "" ? "hidden" : "flex"} text-primary/70 font-medium`}
+            >
+              Craft Metal:
+            </span>{" "}
             {metal}
           </p>
         </div>

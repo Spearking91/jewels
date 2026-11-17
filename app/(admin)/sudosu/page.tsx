@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Dashboard from "./dashboard";
 
+
 const AdminHomePage = () => {
   return (
     <Suspense>

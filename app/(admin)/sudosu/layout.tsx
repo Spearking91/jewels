@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Geist, Great_Vibes } from "next/font/google";
-import "../globals.css";
+import "../../globals.css";
 
 import Sidebar from "@/components/sidebar";
 
@@ -37,10 +37,6 @@ export default function AdminLayout({
     >
       <body className="min-h-full flex flex-col font-cormorant-garamond text-base-content">
         <Sidebar>{children}</Sidebar>
-        {/* Vercel Analytics wrapped in Suspense and placed inside body */}
-        {/* <Suspense fallback={null}>
-          <Analytics />
-        </Suspense> */}
       </body>
     </html>
   );

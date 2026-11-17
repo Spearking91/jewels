@@ -7,17 +7,14 @@ import {
   Plus,
   DotsHorizontalRounded,
   ArrowInDownSquareHalf,
-  CursorPointer,
-  Eye,
-  Group,
-  ShoppingBag,
-  TrendingDown,
-  TrendingUp,
-  X,
   Trash,
   ArrowUp,
   Box,
   BoxAlt,
+  Edit,
+  X,
+  TrendingUp,
+  TrendingDown,
 } from "@boxicons/react";
 import { useEffect, useState } from "react";
 
@@ -52,14 +49,26 @@ const AdminProducts = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [inputPage, setInputPage] = useState<string>("1");
 
-  // Modal & Form States
+  // Modal & Form States (Add)
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [formData, setFormData] = useState(initialFormState);
-
-  // New state to hold selected local files for upload
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+
+  // Edit States
+  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+  const [editingProduct, setEditingProduct] = useState<ProductList | null>(
+    null,
+  );
+  const [editFormData, setEditFormData] = useState(initialFormState);
+  const [editSelectedFiles, setEditSelectedFiles] = useState<File[]>([]);
+  const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
+  const [editFormError, setEditFormError] = useState<string | null>(null);
+
+  // Delete State
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -128,7 +137,16 @@ const AdminProducts = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle file selection from local machine
+  const handleEditFormChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
+    const { name, value } = e.target;
+    setEditFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Handle file selection (Add)
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const filesArray = Array.from(e.target.files);
@@ -140,6 +158,22 @@ const AdminProducts = () => {
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // Handle file selection (Edit)
+  const handleEditFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const filesArray = Array.from(e.target.files);
+      setEditSelectedFiles((prev) => [...prev, ...filesArray]);
+    }
+  };
+
+  const removeEditSelectedFile = (index: number) => {
+    setEditSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeExistingImageUrl = (index: number) => {
+    setExistingImageUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -148,7 +182,6 @@ const AdminProducts = () => {
     try {
       const uploadedImageUrls: string[] = [];
 
-      // 1. Upload each selected file to Supabase Storage 'jewelry' bucket
       for (const file of selectedFiles) {
         const fileExt = file.name.split(".").pop();
         const fileName = `${Date.now()}-${Math.random().toString(36)}.${fileExt}`;
@@ -162,7 +195,6 @@ const AdminProducts = () => {
           throw new Error(`Failed to upload image: ${uploadError.message}`);
         }
 
-        // 2. Get the public URL for the uploaded file
         const { data: publicUrlData } = supabase.storage
           .from("jewelry")
           .getPublicUrl(filePath);
@@ -172,7 +204,6 @@ const AdminProducts = () => {
         }
       }
 
-      // 3. Construct payload with the hosted public URLs
       const payload = {
         title: formData.title.trim(),
         subtitle: formData.subtitle.trim(),
@@ -187,23 +218,19 @@ const AdminProducts = () => {
         updated_at: new Date().toISOString(),
       };
 
-      // 4. Insert into the products table
       const { data, error: insertError } = await supabase
         .from("products")
         .insert([payload])
         .select()
         .single();
 
-      if (insertError) {
-        throw new Error(insertError.message);
-      }
+      if (insertError) throw new Error(insertError.message);
 
       if (data) {
         setProducts((prev) => [data as ProductList, ...prev]);
         setCurrentPage(1);
       }
 
-      // Reset form & files
       setFormData(initialFormState);
       setSelectedFiles([]);
       setIsSubmitting(false);
@@ -215,18 +242,147 @@ const AdminProducts = () => {
     }
   };
 
-  const totalQuantity = products.reduce((sum, product) => {
-    return sum + (Number(product.quantity) || 0);
-  }, 0);
-  const totalCost = products.reduce((sum, product) => {
-    return sum + (Number(product.cost_price) || 0);
-  }, 0);
-  const totalSales = products.reduce((sum, product) => {
-    return sum + (Number(product.selling_price) || 0);
-  }, 0);
-  const totalProfit = totalSales - totalCost;
+  // Open Edit Modal with pre-filled product details
+  const openEditModal = (product: ProductList) => {
+    setEditingProduct(product);
+    setEditFormData({
+      title: product.title || "",
+      subtitle: product.subtitle || "",
+      category: product.category || "",
+      description: product.description || "",
+      selling_price: String(product.selling_price ?? ""),
+      cost_price: String(product.cost_price ?? ""),
+      quantity: String(product.quantity ?? ""),
+      gemstone: product.gemstone || "",
+      metal: product.metal || "",
+    });
+    // Normalize imageUrl to always be string[]
+    let images: string[] = [];
+    if (Array.isArray(product.imageUrl)) {
+      images = product.imageUrl;
+    } else if (
+      typeof product.imageUrl === "string" &&
+      product.imageUrl.trim() !== ""
+    ) {
+      images = [product.imageUrl];
+    }
 
-  // console.log("Total Product Quantity:", totalQuantity);
+    setExistingImageUrls(images);
+    setEditSelectedFiles([]);
+    setEditFormError(null);
+    setIsEditModalOpen(true);
+  };
+
+  // Handle Product Update
+  const handleUpdateProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+    setIsUpdating(true);
+    setEditFormError(null);
+
+    try {
+      const newUploadedUrls: string[] = [];
+
+      for (const file of editSelectedFiles) {
+        const fileExt = file.name.split(".").pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36)}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("jewelry")
+          .upload(filePath, file);
+
+        if (uploadError) {
+          throw new Error(`Failed to upload image: ${uploadError.message}`);
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from("jewelry")
+          .getPublicUrl(filePath);
+
+        if (publicUrlData?.publicUrl) {
+          newUploadedUrls.push(publicUrlData.publicUrl);
+        }
+      }
+
+      const combinedImageUrls = [...existingImageUrls, ...newUploadedUrls];
+
+      const payload = {
+        title: editFormData.title.trim(),
+        subtitle: editFormData.subtitle.trim(),
+        category: editFormData.category.trim(),
+        description: editFormData.description.trim(),
+        selling_price: editFormData.selling_price,
+        cost_price: editFormData.cost_price,
+        quantity: editFormData.quantity,
+        gemstone: editFormData.gemstone.trim(),
+        metal: editFormData.metal.trim(),
+        imageUrl: combinedImageUrls,
+        updated_at: new Date().toISOString(),
+      };
+
+      const { data, error: updateError } = await supabase
+        .from("products")
+        .update(payload)
+        .eq("id", editingProduct.id)
+        .select()
+        .single();
+
+      if (updateError) throw new Error(updateError.message);
+
+      if (data) {
+        setProducts((prev) =>
+          prev.map((p) =>
+            p.id === editingProduct.id ? (data as ProductList) : p,
+          ),
+        );
+      }
+
+      setIsUpdating(false);
+      setIsEditModalOpen(false);
+      setEditingProduct(null);
+    } catch (err: any) {
+      console.error("Error updating product:", err);
+      setEditFormError(err.message || "An unexpected error occurred.");
+      setIsUpdating(false);
+    }
+  };
+
+  // Handle Product Delete
+  const handleDeleteProduct = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this product?")) return;
+    setDeletingId(id);
+
+    try {
+      const { error: deleteError } = await supabase
+        .from("products")
+        .delete()
+        .eq("id", id);
+
+      if (deleteError) throw new Error(deleteError.message);
+
+      setProducts((prev) => prev.filter((p) => p.id !== id));
+    } catch (err: any) {
+      console.error("Error deleting product:", err);
+      alert(`Failed to delete product: ${err.message}`);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const totalQuantity = products.reduce(
+    (sum, p) => sum + (Number(p.quantity) || 0),
+    0,
+  );
+  const totalCost = products.reduce(
+    (sum, p) => sum + (Number(p.cost_price) || 0),
+    0,
+  );
+  const totalSales = products.reduce(
+    (sum, p) => sum + (Number(p.selling_price) || 0),
+    0,
+  );
+  const totalProfit = totalSales - totalCost;
 
   const cards: Card[] = [
     {
@@ -256,15 +412,6 @@ const AdminProducts = () => {
       MainIcon: TrendingUp,
       SecondaryIcon: TrendingDown,
     },
-    // {
-    //   title: "Orders",
-    //   value: "1,224",
-    //   description: "vs. 1,186 last period",
-    //   stat: "4.4%",
-    //   isPositive: true,
-    //   MainIcon: ShoppingBag,
-    //   SecondaryIcon: TrendingUp,
-    // },
   ];
 
   return (
@@ -272,7 +419,6 @@ const AdminProducts = () => {
       {/* --- Top Header --- */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h1 className="text-2xl font-bold tracking-tight">Products</h1>
-
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => {
@@ -301,9 +447,6 @@ const AdminProducts = () => {
             value={card.value}
             description={card.description}
             MainIcon={card.MainIcon}
-            // SecondaryIcon={card.SecondaryIcon}
-            // stat={card.stat}
-            // isPositive={card.isPositive}
           />
         ))}
       </div>
@@ -340,6 +483,7 @@ const AdminProducts = () => {
                 <th>Cost Price</th>
                 <th>Selling Price</th>
                 <th>Last Updated</th>
+                <th className="text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -349,45 +493,15 @@ const AdminProducts = () => {
                     key={`skeleton-${index}`}
                     className="border-b border-base-200/50"
                   >
-                    <td>
-                      <div className="skeleton h-3 w-14"></div>
-                    </td>
-                    <td>
-                      <div className="flex items-center gap-3">
-                        <div className="skeleton h-10 w-10 rounded-lg shrink-0"></div>
-                        <div className="space-y-1.5">
-                          <div className="skeleton h-3 w-28"></div>
-                          <div className="skeleton h-2.5 w-20"></div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="skeleton h-5 w-20 rounded-full"></div>
-                    </td>
-                    <td>
-                      <div className="space-y-1">
-                        <div className="skeleton h-3 w-20"></div>
-                        <div className="skeleton h-2.5 w-16"></div>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="skeleton h-5 w-24 rounded-full"></div>
-                    </td>
-                    <td>
-                      <div className="skeleton h-3 w-16"></div>
-                    </td>
-                    <td>
-                      <div className="skeleton h-3 w-16"></div>
-                    </td>
-                    <td>
-                      <div className="skeleton h-3 w-20"></div>
+                    <td colSpan={9}>
+                      <div className="skeleton h-4 w-full"></div>
                     </td>
                   </tr>
                 ))
               ) : currentProducts.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={9}
                     className="text-center py-10 text-base-content/50 text-sm"
                   >
                     No products found. Click &quot;Add Product&quot; to create
@@ -471,6 +585,29 @@ const AdminProducts = () => {
                         ? new Date(item.updated_at).toLocaleDateString()
                         : "—"}
                     </td>
+                    <td className="text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => openEditModal(item)}
+                          className="btn btn-ghost btn-xs btn-square text-base-content/70 hover:text-primary"
+                          title="Edit Product"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteProduct(item.id)}
+                          disabled={deletingId === item.id}
+                          className="btn btn-ghost btn-xs btn-square text-error hover:bg-error/10"
+                          title="Delete Product"
+                        >
+                          {deletingId === item.id ? (
+                            <span className="loading loading-spinner loading-xs"></span>
+                          ) : (
+                            <Trash className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))
               )}
@@ -498,7 +635,6 @@ const AdminProducts = () => {
               >
                 «
               </button>
-
               {totalPages > 2 && (
                 <div className="join-item flex items-center px-3 bg-base-100 border border-base-300 gap-1.5">
                   <input
@@ -516,7 +652,6 @@ const AdminProducts = () => {
                   </span>
                 </div>
               )}
-
               <button
                 className="join-item btn btn-sm"
                 onClick={() => handlePageChange(currentPage + 1)}
@@ -529,20 +664,13 @@ const AdminProducts = () => {
         )}
       </div>
 
-      {/* --- Add Product Popup Modal with File Upload --- */}
+      {/* --- Add Product Modal --- */}
       {isModalOpen && (
         <dialog className="modal modal-open bg-black/40 backdrop-blur-xs">
           <div className="modal-box max-w-2xl bg-base-100 border border-base-200 shadow-xl rounded-2xl p-6">
             <div className="flex items-center justify-between pb-4 border-b border-base-200">
-              <div>
-                <h3 className="font-bold text-lg">Add New Product</h3>
-                <p className="text-xs text-base-content/60">
-                  Fill in details and upload product images to your
-                  &apos;jewelry&apos; bucket.
-                </p>
-              </div>
+              <h3 className="font-bold text-lg">Add New Product</h3>
               <button
-                type="button"
                 onClick={() => setIsModalOpen(false)}
                 className="btn btn-sm btn-circle btn-ghost"
               >
@@ -557,7 +685,6 @@ const AdminProducts = () => {
             )}
 
             <form onSubmit={handleAddProduct} className="space-y-4 mt-4">
-              {/* Title & Subtitle */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="form-control">
                   <label className="label py-1">
@@ -569,13 +696,11 @@ const AdminProducts = () => {
                     type="text"
                     name="title"
                     required
-                    placeholder="e.g. Solitaire Diamond Ring"
                     value={formData.title}
                     onChange={handleFormChange}
                     className="input input-bordered input-sm w-full"
                   />
                 </div>
-
                 <div className="form-control">
                   <label className="label py-1">
                     <span className="label-text text-xs font-semibold">
@@ -585,7 +710,6 @@ const AdminProducts = () => {
                   <input
                     type="text"
                     name="subtitle"
-                    placeholder="e.g. 18k White Gold Band"
                     value={formData.subtitle}
                     onChange={handleFormChange}
                     className="input input-bordered input-sm w-full"
@@ -593,7 +717,6 @@ const AdminProducts = () => {
                 </div>
               </div>
 
-              {/* Category, Metal & Gemstone */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="form-control">
                   <label className="label py-1">
@@ -605,13 +728,11 @@ const AdminProducts = () => {
                     type="text"
                     name="category"
                     required
-                    placeholder="e.g. Rings"
                     value={formData.category}
                     onChange={handleFormChange}
                     className="input input-bordered input-sm w-full"
                   />
                 </div>
-
                 <div className="form-control">
                   <label className="label py-1">
                     <span className="label-text text-xs font-semibold">
@@ -621,13 +742,11 @@ const AdminProducts = () => {
                   <input
                     type="text"
                     name="metal"
-                    placeholder="e.g. 18k Gold"
                     value={formData.metal}
                     onChange={handleFormChange}
                     className="input input-bordered input-sm w-full"
                   />
                 </div>
-
                 <div className="form-control">
                   <label className="label py-1">
                     <span className="label-text text-xs font-semibold">
@@ -637,7 +756,6 @@ const AdminProducts = () => {
                   <input
                     type="text"
                     name="gemstone"
-                    placeholder="e.g. Diamond"
                     value={formData.gemstone}
                     onChange={handleFormChange}
                     className="input input-bordered input-sm w-full"
@@ -645,7 +763,6 @@ const AdminProducts = () => {
                 </div>
               </div>
 
-              {/* Pricing & Quantity */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="form-control">
                   <label className="label py-1">
@@ -659,13 +776,11 @@ const AdminProducts = () => {
                     min="0"
                     name="cost_price"
                     required
-                    placeholder="0.00"
                     value={formData.cost_price}
                     onChange={handleFormChange}
                     className="input input-bordered input-sm w-full font-mono"
                   />
                 </div>
-
                 <div className="form-control">
                   <label className="label py-1">
                     <span className="label-text text-xs font-semibold">
@@ -678,13 +793,11 @@ const AdminProducts = () => {
                     min="0"
                     name="selling_price"
                     required
-                    placeholder="0.00"
                     value={formData.selling_price}
                     onChange={handleFormChange}
                     className="input input-bordered input-sm w-full font-mono"
                   />
                 </div>
-
                 <div className="form-control">
                   <label className="label py-1">
                     <span className="label-text text-xs font-semibold">
@@ -696,7 +809,6 @@ const AdminProducts = () => {
                     min="0"
                     name="quantity"
                     required
-                    placeholder="0"
                     value={formData.quantity}
                     onChange={handleFormChange}
                     className="input input-bordered input-sm w-full font-mono"
@@ -704,7 +816,6 @@ const AdminProducts = () => {
                 </div>
               </div>
 
-              {/* Description */}
               <div className="form-control">
                 <label className="label py-1">
                   <span className="label-text text-xs font-semibold">
@@ -714,28 +825,22 @@ const AdminProducts = () => {
                 <textarea
                   name="description"
                   rows={2}
-                  placeholder="Detailed description..."
                   value={formData.description}
                   onChange={handleFormChange}
                   className="textarea textarea-bordered textarea-sm w-full"
                 />
               </div>
 
-              {/* Local File Upload Component */}
               <div className="form-control space-y-2">
                 <label className="label py-0">
                   <span className="label-text text-xs font-semibold">
-                    Upload Images to &apos;jewelry&apos; bucket
+                    Upload Images
                   </span>
                 </label>
-
-                <label className="border-2 border-dashed border-base-300 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors bg-base-200/30">
+                <label className="border-2 border-dashed border-base-300 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer hover:border-primary bg-base-200/30">
                   <ArrowUp className="w-6 h-6 text-base-content/50 mb-1" />
                   <span className="text-xs font-medium text-base-content/70">
-                    Click to browse or drag images here
-                  </span>
-                  <span className="text-[10px] text-base-content/40">
-                    PNG, JPG, WEBP up to 5MB
+                    Click to browse images
                   </span>
                   <input
                     type="file"
@@ -745,23 +850,18 @@ const AdminProducts = () => {
                     className="hidden"
                   />
                 </label>
-
-                {/* Selected Files Preview List */}
                 {selectedFiles.length > 0 && (
-                  <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1 mt-2">
+                  <div className="space-y-1.5 max-h-32 overflow-y-auto">
                     {selectedFiles.map((file, idx) => (
                       <div
                         key={idx}
                         className="flex items-center justify-between bg-base-200/60 px-3 py-1.5 rounded-lg text-xs"
                       >
-                        <span className="truncate max-w-xs font-medium">
-                          {file.name}
-                        </span>
+                        <span className="truncate max-w-xs">{file.name}</span>
                         <button
                           type="button"
                           onClick={() => removeSelectedFile(idx)}
-                          className="btn btn-ghost btn-xs text-error btn-square"
-                          title="Remove file"
+                          className="btn btn-ghost btn-xs text-error"
                         >
                           <Trash className="w-3.5 h-3.5" />
                         </button>
@@ -771,25 +871,290 @@ const AdminProducts = () => {
                 )}
               </div>
 
-              {/* Modal Actions */}
               <div className="modal-action pt-4 border-t border-base-200">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
                   disabled={isSubmitting}
-                  className="btn btn-sm btn-ghost normal-case"
+                  className="btn btn-sm btn-ghost"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="btn btn-sm btn-primary text-white normal-case min-w-32"
+                  className="btn btn-sm btn-primary"
                 >
                   {isSubmitting ? (
                     <span className="loading loading-spinner loading-xs"></span>
                   ) : (
                     "Save Product"
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </dialog>
+      )}
+
+      {/* --- Edit Product Modal --- */}
+      {isEditModalOpen && (
+        <dialog className="modal modal-open bg-black/40 backdrop-blur-xs">
+          <div className="modal-box max-w-2xl bg-base-100 border border-base-200 shadow-xl rounded-2xl p-6">
+            <div className="flex items-center justify-between pb-4 border-b border-base-200">
+              <h3 className="font-bold text-lg">Edit Product</h3>
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="btn btn-sm btn-circle btn-ghost"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {editFormError && (
+              <div className="alert alert-error text-xs mt-4 py-2.5">
+                <span>{editFormError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleUpdateProduct} className="space-y-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="form-control">
+                  <label className="label py-1">
+                    <span className="label-text text-xs font-semibold">
+                      Title *
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    name="title"
+                    required
+                    value={editFormData.title}
+                    onChange={handleEditFormChange}
+                    className="input input-bordered input-sm w-full"
+                  />
+                </div>
+                <div className="form-control">
+                  <label className="label py-1">
+                    <span className="label-text text-xs font-semibold">
+                      Subtitle
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    name="subtitle"
+                    value={editFormData.subtitle}
+                    onChange={handleEditFormChange}
+                    className="input input-bordered input-sm w-full"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="form-control">
+                  <label className="label py-1">
+                    <span className="label-text text-xs font-semibold">
+                      Category *
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    name="category"
+                    required
+                    value={editFormData.category}
+                    onChange={handleEditFormChange}
+                    className="input input-bordered input-sm w-full"
+                  />
+                </div>
+                <div className="form-control">
+                  <label className="label py-1">
+                    <span className="label-text text-xs font-semibold">
+                      Metal
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    name="metal"
+                    value={editFormData.metal}
+                    onChange={handleEditFormChange}
+                    className="input input-bordered input-sm w-full"
+                  />
+                </div>
+                <div className="form-control">
+                  <label className="label py-1">
+                    <span className="label-text text-xs font-semibold">
+                      Gemstone
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    name="gemstone"
+                    value={editFormData.gemstone}
+                    onChange={handleEditFormChange}
+                    className="input input-bordered input-sm w-full"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="form-control">
+                  <label className="label py-1">
+                    <span className="label-text text-xs font-semibold">
+                      Cost Price (GH₵) *
+                    </span>
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    name="cost_price"
+                    required
+                    value={editFormData.cost_price}
+                    onChange={handleEditFormChange}
+                    className="input input-bordered input-sm w-full font-mono"
+                  />
+                </div>
+                <div className="form-control">
+                  <label className="label py-1">
+                    <span className="label-text text-xs font-semibold">
+                      Selling Price (GH₵) *
+                    </span>
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    name="selling_price"
+                    required
+                    value={editFormData.selling_price}
+                    onChange={handleEditFormChange}
+                    className="input input-bordered input-sm w-full font-mono"
+                  />
+                </div>
+                <div className="form-control">
+                  <label className="label py-1">
+                    <span className="label-text text-xs font-semibold">
+                      Quantity *
+                    </span>
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    name="quantity"
+                    required
+                    value={editFormData.quantity}
+                    onChange={handleEditFormChange}
+                    className="input input-bordered input-sm w-full font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="form-control">
+                <label className="label py-1">
+                  <span className="label-text text-xs font-semibold">
+                    Description
+                  </span>
+                </label>
+                <textarea
+                  name="description"
+                  rows={2}
+                  value={editFormData.description}
+                  onChange={handleEditFormChange}
+                  className="textarea textarea-bordered textarea-sm w-full"
+                />
+              </div>
+
+              {/* Existing Images Management */}
+              {existingImageUrls.length > 0 && (
+                <div className="form-control space-y-1.5">
+                  <label className="label py-0">
+                    <span className="label-text text-xs font-semibold">
+                      Existing Images
+                    </span>
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {existingImageUrls.map((url, idx) => (
+                      <div
+                        key={idx}
+                        className="relative w-16 h-16 rounded-lg overflow-hidden border border-base-300 group"
+                      >
+                        <img
+                          src={url}
+                          alt={`Product ${idx}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeExistingImageUrl(idx)}
+                          className="absolute inset-0 bg-black/50  flex items-center justify-center opacity-0 group-hover:opacity-150 transition-opacity"
+                        >
+                          <Trash className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Upload New Images */}
+              <div className="form-control space-y-2">
+                <label className="label py-0">
+                  <span className="label-text text-xs font-semibold">
+                    Add More Images
+                  </span>
+                </label>
+                <label className="border-2 border-dashed border-base-300 rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer hover:border-primary bg-base-200/30">
+                  <ArrowUp className="w-5 h-5 text-base-content/50 mb-1" />
+                  <span className="text-xs font-medium text-base-content/70">
+                    Click to browse new images
+                  </span>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleEditFileChange}
+                    className="hidden"
+                  />
+                </label>
+                {editSelectedFiles.length > 0 && (
+                  <div className="space-y-1.5 max-h-24 overflow-y-auto">
+                    {editSelectedFiles.map((file, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between bg-base-200/60 px-3 py-1 rounded-lg text-xs"
+                      >
+                        <span className="truncate max-w-xs">{file.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeEditSelectedFile(idx)}
+                          className="btn btn-ghost btn-xs text-error"
+                        >
+                          <Trash className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="modal-action pt-4 border-t border-base-200">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  disabled={isUpdating}
+                  className="btn btn-sm btn-ghost"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdating}
+                  className="btn btn-sm btn-primary"
+                >
+                  {isUpdating ? (
+                    <span className="loading loading-spinner loading-xs"></span>
+                  ) : (
+                    "Update Product"
                   )}
                 </button>
               </div>

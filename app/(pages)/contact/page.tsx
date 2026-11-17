@@ -1,6 +1,13 @@
 "use client";
 
-import { Instagram, Tiktok, Whatsapp, Copy, Check } from "@boxicons/react";
+import {
+  Instagram,
+  Tiktok,
+  Whatsapp,
+  Copy,
+  Check,
+  Envelope,
+} from "@boxicons/react";
 import { useEffect, useState } from "react";
 
 const QUICK_MESSAGES = [
@@ -34,10 +41,10 @@ export default function Contact() {
       badge: "Fastest Reply",
     },
     {
-      Icon: Instagram,
-      label: "Instagram",
-      handle: "@yourhandle",
-      href: "https://instagram.com/yourhandle",
+      Icon: Envelope,
+      label: "Email",
+      handle: "arthurjoyce1421@gmail.com",
+      href: "arthurjoyce1421@gmail.com",
     },
     {
       Icon: Tiktok,
@@ -78,7 +85,9 @@ export default function Contact() {
             Complete Your Order
           </h1>
           <p className="py-4 text-base-content/80 text-lg max-w-md mx-auto lg:mx-0">
-            Your order invoice PDF has been downloaded to your device. Review your order details in the message box and send them to WhatsApp, then attach your downloaded PDF!
+            Your order invoice PDF has been downloaded to your device. Review
+            your order details in the message box and send them to WhatsApp,
+            then attach your downloaded PDF!
           </p>
 
           <div className="flex flex-col gap-3 mt-4 max-w-md mx-auto lg:mx-0">
@@ -135,7 +144,8 @@ export default function Contact() {
             <div>
               <h2 className="card-title text-xl">WhatsApp Checkout</h2>
               <p className="text-xs text-base-content/60 mt-1">
-                Your order summary is pre-filled below. Send it and attach your PDF invoice!
+                Your order summary is pre-filled below. Send it and attach your
+                PDF invoice!
               </p>
             </div>
 
@@ -143,7 +153,8 @@ export default function Contact() {
             <div className="form-control">
               <label className="label py-1">
                 <span className="label-text font-medium">
-                  Your Name <span className="text-base-content/40">(Optional)</span>
+                  Your Name{" "}
+                  <span className="text-base-content/40">(Optional)</span>
                 </span>
               </label>
               <input

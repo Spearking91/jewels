@@ -67,7 +67,9 @@ export default function Homepage() {
         <div className="hero-content text-neutral-content text-center">
           <Reveal>
             <section className="border border-gray-300 p-5 w-full rounded-xl">
-              <h1 className={"text-6xl text-left text-primary font-great-vibes"}>
+              <h1
+                className={"text-6xl text-left text-primary font-great-vibes"}
+              >
                 Discover Modern <br />
                 Jewellery
               </h1>
@@ -137,7 +139,7 @@ export default function Homepage() {
             </div>
           </section>
         </Reveal>
-        
+
         <Reveal>
           <section className="min-h-screen flex items-center justify-center">
             <div className="flex flex-col max-w-2/3 lg:flex-row-reverse">
@@ -151,16 +153,16 @@ export default function Homepage() {
                   Chosen Specially for you
                 </h1>
                 <p className="mt-4 text-left">
-                  Welcome to our jewellery store! We are passionate about
-                  creating exquisite pieces that capture the essence of elegance
-                  and style. Our collection features a wide range of modern
-                  jewellery designs, from timeless classics to contemporary
-                  statement pieces. Each piece is crafted with precision and
-                  care, using high-quality materials to ensure lasting beauty.
-                  Whether you&apos;re looking for a special gift or a treat for
-                  yourself, we have something for everyone. Explore our
-                  collection and discover the perfect piece to complement your
-                  unique style.
+                  Welcome to OYCE Jewelry. <br /> We believe jewelry isn&apos;t
+                  just an accessory — it&apos;s how you show up. Confident.
+                  Elegant. Unforgettable. <br /> At OYCE, we handpick timeless
+                  and modern pieces that are affordable, non-tarnish, and made
+                  to last. From everyday earrings to statement necklaces, every
+                  piece is chosen with care, so you don&apos;t have to
+                  second-guess your style. Whether it&apos;s a gift for someone
+                  special or a treat for yourself, there&apos;s an OYCE piece
+                  waiting for you. <br /> Explore the collection and find the
+                  piece that was chosen specially for you.
                 </p>
               </div>
             </div>
@@ -177,7 +179,7 @@ export default function Homepage() {
                 View all <ArrowRight />
               </Link>
             </div>
-            
+
             {/* Suspense wrapper satisfies Next.js 16 cache requirements */}
             <Suspense
               fallback={
