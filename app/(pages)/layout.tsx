@@ -5,6 +5,8 @@ import Footer from "@/components/footer";
 import { Analytics } from "@vercel/analytics/next";
 import { Suspense } from "react";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
+import TitleBar from "@/components/titleBar";
+import CartDrawer from "../../components/cartDrawer";
 
 export const cormorantGaramond = Cormorant_Garamond({
   weight: "400",
@@ -38,7 +40,10 @@ export default function RootLayout({
       className={`${geistSans.variable} ${cormorantGaramond.variable} ${greatVibes.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-cormorant-garamond text-base-content">
-        {children}
+        <CartDrawer>
+          <TitleBar />
+          {children}
+        </CartDrawer>
         <Footer />
 
         {/* Vercel Analytics wrapped in Suspense and placed inside body */}

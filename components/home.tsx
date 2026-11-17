@@ -15,7 +15,7 @@ const Home = () => {
   return (
     <>
       <section className="min-h-screen flex flex-col items-center justify-center text-base-content w-full px-5 pb-10">
-        <TitleBar />
+        
         <div className=" flex w-full justify-center items-center flex-col-reverse gap-5 lg:flex-row-reverse">
           <div className=" flex justify-between items-center flex-col ">
             <div className="h- w-full flex flex-col justify-between items-center  ">

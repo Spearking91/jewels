@@ -19,7 +19,7 @@ import React, { useEffect, useState } from "react";
 function ProductDetailsContent() {
   const params = useParams();
   const router = useRouter();
-  
+
   const productId = params?.id as string;
 
   const [product, setProduct] = useState<any>(null);
@@ -89,7 +89,17 @@ function ProductDetailsContent() {
 
     setAdding(false);
     if (res.success) {
-      router.push("/cart");
+      // 1. Ensure CartDrawer reloads the latest items
+      window.dispatchEvent(new Event("cart-updated"));
+
+      // 2. Open the DaisyUI CartDrawer programmatically
+      const drawerCheckbox = document.getElementById(
+        "cart-drawer-toggle",
+      ) as HTMLInputElement | null;
+
+      if (drawerCheckbox) {
+        drawerCheckbox.checked = true;
+      }
     } else {
       alert(`Could not add to cart: ${res.error}`);
     }
@@ -102,7 +112,8 @@ function ProductDetailsContent() {
   const displayImage =
     Array.isArray(product.imageUrl) && product.imageUrl.length > 0
       ? product.imageUrl[0]
-      : product.imageUrl || "https://images.unsplash.com/photo-1693212793204-bcea856c75fe";
+      : product.imageUrl ||
+        "https://images.unsplash.com/photo-1693212793204-bcea856c75fe";
 
   return (
     <div className="min-h-screen bg-base-100 text-base-content px-6 lg:px-16 py-8 flex flex-col items-center w-full">
@@ -175,7 +186,8 @@ function ProductDetailsContent() {
                 Primary Gemstone
               </span>
               <p className="text-sm font-medium text-amber-100 flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-primary" /> {product.gemstone || "None"}
+                <Sparkles className="w-4 h-4 text-primary" />{" "}
+                {product.gemstone || "None"}
               </p>
             </div>
             <div className="space-y-1">
