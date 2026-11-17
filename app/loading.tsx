@@ -1,6 +1,9 @@
 import { CompanyName, CompanySlogan } from "@/lib/constants";
 
-export default function Loading() {
+export default async function Loading() {
+  // Artificial 1-second delay for a smoother luxury transition
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
   return (
     <div className="min-h-screen bg-base-100 text-base-content flex flex-col items-center justify-center p-6 relative overflow-hidden">
       {/* Background ambient glow effect */}
