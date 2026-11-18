@@ -38,8 +38,13 @@ const Sidebar = ({ children }: SidebarProps) => {
       href: "/sudosu/adminproducts",
       badge: "",
     },
+    {
+      Icon: FileDetail,
+      label: "Orders",
+      href: "/sudosu/adminorder",
+      badge: "",
+    },
     // { Icon: Candlestick, label: "Stock", href: "/stock", badge: "46" },
-    // { Icon: FileDetail, label: "Content", href: "/content", badge: "" },
   ];
 
   const financeTabs = [

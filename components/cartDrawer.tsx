@@ -7,13 +7,12 @@ import {
   CartItem,
   getCartItems,
   removeFromCart,
-  syncGuestCartToAccount,
 } from "../utils/cart";
 import { supabase } from "../utils/supabase";
 import { Trash, ShoppingBag, CheckCircle, X } from "@boxicons/react";
 import jsPDF from "jspdf";
 
-const cartDrawer = ({ children }: { children: React.ReactNode }) => {
+const CartDrawer = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -22,14 +21,8 @@ const cartDrawer = ({ children }: { children: React.ReactNode }) => {
 
   const loadCart = async () => {
     setLoading(true);
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    setIsLoggedIn(!!user);
-
-    if (user) {
-      await syncGuestCartToAccount();
-    }
+    const { data: { user } } = await supabase.auth.getUser();
+    setIsLoggedIn(!!user && !user.is_anonymous);
 
     const items = await getCartItems();
     setCartItems(items);
@@ -59,8 +52,6 @@ const cartDrawer = ({ children }: { children: React.ReactNode }) => {
     if (cartItems.length === 0) return;
 
     const doc = new jsPDF();
-
-    // Add Store Header
     doc.setFont("helvetica", "bold");
     doc.setFontSize(20);
     doc.text("ORDER INVOICE / CART SUMMARY", 14, 20);
@@ -70,7 +61,6 @@ const cartDrawer = ({ children }: { children: React.ReactNode }) => {
     doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 28);
     doc.text(`Total Items: ${totalItems}`, 14, 34);
 
-    // Build Table Rows for PDF
     const tableRows = cartItems.map((item, index) => [
       index + 1,
       item.title,
@@ -94,10 +84,8 @@ const cartDrawer = ({ children }: { children: React.ReactNode }) => {
     doc.setFont("helvetica", "bold");
     doc.text(`Grand Total: GHc ${subtotal.toFixed(2)}`, 14, finalY + 12);
 
-    // 1. Download PDF locally to device
     doc.save(`Order_Invoice_${Date.now()}.pdf`);
 
-    // 2. Prepare text summary for WhatsApp
     const orderSummaryText = cartItems
       .map(
         (i) =>
@@ -114,10 +102,7 @@ const cartDrawer = ({ children }: { children: React.ReactNode }) => {
       )}*\n\n*(Note: I have downloaded and attached my PDF invoice to this chat)*`,
     );
 
-    // Close drawer by unchecking the input (optional or handled by router push)
-    const checkbox = document.getElementById(
-      "cart-drawer-toggle",
-    ) as HTMLInputElement;
+    const checkbox = document.getElementById("cart-drawer-toggle") as HTMLInputElement;
     if (checkbox) checkbox.checked = false;
 
     router.push("/contact");
@@ -125,58 +110,33 @@ const cartDrawer = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="drawer drawer-end z-50">
-      <input
-        id="cart-drawer-toggle"
-        type="checkbox"
-        className="drawer-toggle"
-      />
-
-      {/* The drawer content wraps the rest of your app layout */}
+      <input id="cart-drawer-toggle" type="checkbox" className="drawer-toggle" />
       {children}
-      <div className="drawer-content flex flex-col">
-        {/* You can place a trigger button anywhere, e.g., in your Navbar/TitleBar */}
-      </div>
+      <div className="drawer-content flex flex-col"></div>
 
       <div className="drawer-side">
-        <label
-          htmlFor="cart-drawer-toggle"
-          aria-label="close sidebar"
-          className="drawer-overlay"
-        ></label>
-
+        <label htmlFor="cart-drawer-toggle" aria-label="close sidebar" className="drawer-overlay"></label>
         <div className="menu bg-base-100 text-base-content min-h-full w-96 sm:w-[450px] p-6 flex flex-col justify-between shadow-2xl">
-          {/* Drawer Header */}
           <div>
             <div className="flex items-center justify-between pb-4 border-b border-base-300">
               <div className="flex items-center gap-2">
                 <ShoppingBag className="w-5 h-5 text-primary" />
                 <h2 className="text-lg font-bold">Your Shopping Cart</h2>
-                <span className="badge badge-sm badge-neutral/10 font-bold">
-                  {totalItems}
-                </span>
+                <span className="badge badge-sm badge-neutral/10 font-bold">{totalItems}</span>
               </div>
-              <label
-                htmlFor="cart-drawer-toggle"
-                className="btn btn-sm btn-ghost btn-square"
-              >
+              <label htmlFor="cart-drawer-toggle" className="btn btn-sm btn-ghost btn-square">
                 <X className="w-5 h-5" />
               </label>
             </div>
 
             <p className="text-xs text-base-content/60 mt-2">
-              {isLoggedIn
-                ? "Synced with your account orders"
-                : "Saved locally on this device"}
+              {isLoggedIn ? "Synced with your account orders" : "Temporary guest session active"}
             </p>
 
-            {/* Cart Items List */}
             <div className="mt-4 space-y-3 max-h-[55vh] overflow-y-auto pr-1">
               {loading ? (
                 Array.from({ length: 3 }).map((_, index) => (
-                  <div
-                    key={`skeleton-${index}`}
-                    className="skeleton h-16 w-full rounded-xl"
-                  ></div>
+                  <div key={`skeleton-${index}`} className="skeleton h-16 w-full rounded-xl"></div>
                 ))
               ) : cartItems.length === 0 ? (
                 <div className="text-center py-16 text-base-content/50 text-sm">
@@ -184,31 +144,18 @@ const cartDrawer = ({ children }: { children: React.ReactNode }) => {
                 </div>
               ) : (
                 cartItems.map((item) => (
-                  <div
-                    key={item.productId}
-                    className="flex items-center justify-between gap-3 p-3 rounded-xl bg-base-200/50 border border-base-300/60"
-                  >
+                  <div key={item.productId} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-base-200/50 border border-base-300/60">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="w-12 h-12 rounded-lg bg-base-200 border border-base-300 shrink-0 overflow-hidden">
                         {item.imageUrl ? (
-                          <img
-                            src={item.imageUrl}
-                            alt={item.title}
-                            className="w-full h-full object-cover"
-                          />
+                          <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
                         ) : (
-                          <div className="flex items-center justify-center w-full h-full text-[10px] text-base-content/40">
-                            N/A
-                          </div>
+                          <div className="flex items-center justify-center w-full h-full text-[10px] text-base-content/40">N/A</div>
                         )}
                       </div>
                       <div className="min-w-0">
-                        <p className="font-semibold text-xs text-base-content truncate">
-                          {item.title}
-                        </p>
-                        <p className="text-[11px] text-base-content/60 truncate">
-                          {item.metal || "Standard"} • Qty: {item.quantity}
-                        </p>
+                        <p className="font-semibold text-xs text-base-content truncate">{item.title}</p>
+                        <p className="text-[11px] text-base-content/60 truncate">{item.metal || "Standard"} • Qty: {item.quantity}</p>
                         <p className="text-xs font-bold font-mono text-emerald-600 mt-0.5">
                           GH₵{(Number(item.price) * item.quantity).toFixed(2)}
                         </p>
@@ -230,13 +177,10 @@ const cartDrawer = ({ children }: { children: React.ReactNode }) => {
             </div>
           </div>
 
-          {/* Drawer Footer & Checkout Action */}
           <div className="pt-4 border-t border-base-300 space-y-4">
             <div className="flex items-center justify-between font-mono text-sm">
               <span className="text-base-content/70">Subtotal:</span>
-              <span className="font-bold text-emerald-600 text-base">
-                GH₵{subtotal.toFixed(2)}
-              </span>
+              <span className="font-bold text-emerald-600 text-base">GH₵{subtotal.toFixed(2)}</span>
             </div>
 
             {cartItems.length > 0 && (
@@ -255,4 +199,4 @@ const cartDrawer = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export default cartDrawer;
+export default CartDrawer;

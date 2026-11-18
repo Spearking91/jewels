@@ -199,7 +199,7 @@ export default function Products() {
               <Card
                 key={product.id}
                 style="w-full max-w-sm !p-4 md:flex-col [&_h1]:!text-2xl [&_p]:!text-xs"
-                thumbUrl={product.imageUrl}
+                thumbUrl={product.imageUrl[0]}
                 title={product.title}
                 subtitle={product.subtitle}
                 description={product.description}

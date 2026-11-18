@@ -8,7 +8,7 @@ import React from "react";
 const TitleBar = () => {
   const listItems = [
     { tabs: "HOME", href: "/" },
-    { tabs: "PRODUCTS", href: "/products" },
+    { tabs: "COLLECTION", href: "/products" },
     { tabs: "ABOUT", href: "/about" },
     { tabs: "CONTACT", href: "/contact" },
   ];
