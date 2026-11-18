@@ -30,7 +30,7 @@ async function LatestProductsSection() {
         currentProducts.map((product) => (
           <Card
             key={product.id}
-            thumbUrl={product.imageUrl}
+            thumbUrl={product.imageUrl[0]}
             title={product.title}
             subtitle={product.subtitle}
             description={product.description}
