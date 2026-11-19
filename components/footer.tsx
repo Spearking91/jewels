@@ -5,6 +5,7 @@ import {
   Snapchat,
   TwitterX,
   Whatsapp,
+  Tiktok
 
 } from "@boxicons/react";
 import React from "react";
