@@ -5,7 +5,7 @@ import {
   Snapchat,
   TwitterX,
   Whatsapp,
-  X,
+
 } from "@boxicons/react";
 import React from "react";
 
@@ -32,8 +32,11 @@ const Footer = () => {
           <Facebook className="size-7" />
         </a>
 
-        <a href="https://www.instagram.com/mart.oyce" target="_blank">
+        <a href="https://www.instagram.com/oycejewels.more" target="_blank">
           <Instagram className="size-7" />
+        </a>
+        <a href="https://www.tiktok.com/@oyce.jewels">
+          <Tiktok className="size-7" />
         </a>
         <a href="https://snapchat.com/add/p_bhite2020" target="_blank">
           <Snapchat className="size-7" />
