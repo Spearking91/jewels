@@ -31,30 +31,101 @@ import { connection } from "next/server";
 // Ensure Vercel always fetches fresh analytics on request
 export const dynamic = "force-dynamic";
 
-const profitData = [
-  { date: "1 Jan", current: 4000, previous: 3800 },
-  { date: "4 Jan", current: 3900, previous: 3600 },
-  { date: "8 Jan", current: 8500, previous: 5200 },
-  { date: "12 Jan", current: 7200, previous: 6100 },
-  { date: "15 Jan", current: 12324, previous: 5563 },
-  { date: "22 Jan", current: 9800, previous: 7100 },
-  { date: "29 Jan", current: 13500, previous: 8900 },
-];
+const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-const barData = [
-  { day: "Sun", value: 3200 },
-  { day: "Mon", value: 4500 },
-  { day: "Tue", value: 8162, highlight: true },
-  { day: "Wed", value: 3100 },
-  { day: "Thu", value: 2400 },
-  { day: "Fri", value: 5200 },
-  { day: "Sat", value: 4100 },
-];
+// Counts unique user visits (sessions) per day of the week over the last 30 days
+function buildWeekdayVisits(
+  events: { session_id: string; event_type: string; created_at: string }[],
+  thirtyDaysAgoIso: string,
+) {
+  const thirtyDaysAgoMs = new Date(thirtyDaysAgoIso).getTime();
+  const sessionsByDay = WEEKDAY_LABELS.map(() => new Set<string>());
 
-const gaugeData = [
-  { name: "Progress", value: 68, fill: "#10b981" },
-  { name: "Remaining", value: 32, fill: "#f3f4f6" },
-];
+  for (const ev of events) {
+    if (!ev.session_id) continue;
+    const evTime = new Date(ev.created_at).getTime();
+    if (evTime >= thirtyDaysAgoMs) {
+      const dayIndex = new Date(ev.created_at).getDay(); // 0 (Sun) - 6 (Sat)
+      sessionsByDay[dayIndex].add(ev.session_id);
+    }
+  }
+
+  const counts = sessionsByDay.map((set) => set.size);
+  const maxVisits = Math.max(...counts);
+
+  const barData = WEEKDAY_LABELS.map((day, idx) => ({
+    day,
+    value: counts[idx],
+    // Only highlight a day if there is at least 1 visit
+    highlight: maxVisits > 0 && counts[idx] === maxVisits,
+  }));
+
+  const topDayIndex = maxVisits > 0 ? counts.indexOf(maxVisits) : -1;
+  const topDay = topDayIndex >= 0 ? WEEKDAY_LABELS[topDayIndex] : null;
+
+  return { barData, topDay, maxVisits };
+}
+
+// Calculates repeat customer rate from anonymous IDs over the last 30 days.
+// Counts an ID as "repeat" if it appears across 2+ distinct calendar days (or 2+ occurrences).
+function buildRepeatCustomerGauge(
+  events: { session_id: string; created_at: string }[],
+  thirtyDaysAgoIso: string,
+  target = 80,
+) {
+  const thirtyDaysAgoMs = new Date(thirtyDaysAgoIso).getTime();
+  const activeDaysById = new Map<string, Set<string>>();
+
+  for (const ev of events) {
+    if (!ev.session_id) continue;
+    const evTime = new Date(ev.created_at).getTime();
+    if (evTime >= thirtyDaysAgoMs) {
+      const dayKey = new Date(ev.created_at).toISOString().slice(0, 10); // "YYYY-MM-DD"
+      let daysSet = activeDaysById.get(ev.session_id);
+      if (!daysSet) {
+        daysSet = new Set<string>();
+        activeDaysById.set(ev.session_id, daysSet);
+      }
+      daysSet.add(dayKey);
+    }
+  }
+
+  const totalUsers = activeDaysById.size;
+  let repeatUsers = 0;
+
+  for (const daysSet of activeDaysById.values()) {
+    if (daysSet.size > 1) {
+      repeatUsers++;
+    }
+  }
+
+  const rate =
+    totalUsers > 0 ? Number(((repeatUsers / totalUsers) * 100).toFixed(1)) : 0;
+  const clampedProgress = Math.min(100, Math.max(0, rate));
+
+  const gaugeData = [
+    {
+      name: "Repeat",
+      value: clampedProgress,
+      fill: rate >= target ? "#10b981" : "#2563eb",
+    },
+    {
+      name: "One-time",
+      value: Number((100 - clampedProgress).toFixed(1)),
+      fill: "#f3f4f6",
+    },
+  ];
+
+  return {
+    gaugeData,
+    repeatSummary: {
+      rate,
+      repeatUsers,
+      totalUsers,
+      target,
+    },
+  };
+}
 
 const simple = [
   { title: "Retailers", value: "2,884", Icon: StoreAlt },
@@ -73,9 +144,58 @@ function calcGrowth(current: number, previous: number) {
   };
 }
 
+// Add this helper above getDashboardMetrics()
+function buildProfitSeries(
+  rows: { created_at: string; profit: number }[],
+  now: Date,
+) {
+  const MS_PER_DAY = 24 * 60 * 60 * 1000;
+  const currentDaily = new Array(30).fill(0);
+  const previousDaily = new Array(30).fill(0);
+
+  let currentTotal = 0;
+  let previousTotal = 0;
+
+  for (const row of rows) {
+    const rowTime = new Date(row.created_at).getTime();
+    const daysAgo = Math.floor((now.getTime() - rowTime) / MS_PER_DAY);
+    const amount = Number(row.profit) || 0;
+
+    if (daysAgo >= 0 && daysAgo < 30) {
+      // Index 0 = 29 days ago, Index 29 = today
+      currentDaily[29 - daysAgo] += amount;
+      currentTotal += amount;
+    } else if (daysAgo >= 30 && daysAgo < 60) {
+      // Index 0 = 59 days ago, Index 29 = 30 days ago
+      previousDaily[59 - daysAgo] += amount;
+      previousTotal += amount;
+    }
+  }
+
+  const profitData = currentDaily.map((currVal, idx) => {
+    const pointDate = new Date(now.getTime() - (29 - idx) * MS_PER_DAY);
+    return {
+      date: pointDate.toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+      }),
+      current: Number(currVal.toFixed(2)),
+      previous: Number(previousDaily[idx].toFixed(2)),
+    };
+  });
+
+  const profitGrowth = calcGrowth(currentTotal, previousTotal);
+
+  return {
+    profitData,
+    currentTotal,
+    profitGrowth,
+  };
+}
+
 // Fetch live analytics & product stats on the server
 async function getDashboardMetrics() {
-  await connection(); // <-- 2. Await connection here to declare this as a dynamic request-time call
+  await connection();
 
   const now = new Date();
   const threeMinsAgo = new Date(now.getTime() - 3 * 60 * 1000).toISOString();
@@ -86,25 +206,31 @@ async function getDashboardMetrics() {
     now.getTime() - 60 * 24 * 60 * 60 * 1000,
   ).toISOString();
 
-  const [onlineRes, recentEventsRes, productsRes] = await Promise.all([
-    // 1. Active sessions in last 3 minutes
-    supabase
-      .from("site_analytics")
-      .select("session_id")
-      .gte("created_at", threeMinsAgo),
+  // Add the 4th query for your sales/orders profits
+  const [onlineRes, recentEventsRes, productsRes, profitsRes] =
+    await Promise.all([
+      supabase
+        .from("site_analytics")
+        .select("session_id")
+        .gte("created_at", threeMinsAgo),
 
-    // 2. Last 60 days of analytics to compare current 30d vs previous 30d
-    supabase
-      .from("site_analytics")
-      .select("session_id, event_type, created_at")
-      .gte("created_at", sixtyDaysAgo),
+      supabase
+        .from("site_analytics")
+        .select("session_id, event_type, created_at")
+        .gte("created_at", sixtyDaysAgo),
 
-    // 3. Products for low stock & total stock count
-    supabase
-      .from("products")
-      .select("*")
-      .order("quantity", { ascending: true }),
-  ]);
+      supabase
+        .from("products")
+        .select("*")
+        .order("quantity", { ascending: true }),
+
+      // Replace "orders" and "profit" with your actual table & profit column
+      // If you calculate profit per order, select "total_amount, total_cost, created_at"
+      supabase
+        .from("orders")
+        .select("profit, created_at")
+        .gte("created_at", sixtyDaysAgo),
+    ]);
 
   // --- Calculate Online Now ---
   const onlineSessions = new Set(
@@ -183,11 +309,52 @@ async function getDashboardMetrics() {
     },
   ];
 
-  return { cards, lowStockProducts };
+  const { profitData, currentTotal, profitGrowth } = buildProfitSeries(
+    profitsRes.data ?? [],
+    now,
+  );
+  const { barData, topDay, maxVisits } = buildWeekdayVisits(
+    events,
+    thirtyDaysAgo,
+  );
+
+  const { gaugeData, repeatSummary } = buildRepeatCustomerGauge(
+    events,
+    thirtyDaysAgo,
+  );
+
+  return {
+    cards,
+    lowStockProducts,
+    profitData,
+    totalProfit: currentTotal,
+    profitGrowth,
+    barData,
+    topDay,
+    maxVisits,
+    gaugeData,
+    repeatSummary,
+  };
 }
 
 export default async function Dashboard() {
-  const { cards, lowStockProducts } = await getDashboardMetrics();
+  const {
+    cards,
+    lowStockProducts,
+    profitData,
+    totalProfit,
+    profitGrowth,
+    barData,
+    topDay,
+    maxVisits,
+    gaugeData,
+    repeatSummary,
+  } = await getDashboardMetrics();
+
+  const formattedTotalProfit =
+    totalProfit >= 1000
+      ? `GH₵${(totalProfit / 1000).toFixed(1)}K`
+      : `GH₵${totalProfit.toFixed(2)}`;
 
   return (
     <div className="p-6 bg-base-200/50 min-h-screen space-y-6 text-base-content font-sans">
@@ -243,6 +410,7 @@ export default async function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           {/* Total Profit Area Chart */}
+          {/* Total Profit Area Chart */}
           <div className="card bg-base-100 p-6 rounded-2xl shadow-sm border border-base-200/60">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-base font-bold">Total Profit</h2>
@@ -250,11 +418,22 @@ export default async function Dashboard() {
 
             <div className="mb-4">
               <div className="text-3xl font-extrabold tracking-tight">
-                $446.7K
+                {formattedTotalProfit}
               </div>
               <div className="flex items-center gap-1 mt-1">
-                <span className="badge badge-success/15 text-success text-xs font-semibold border-0">
-                  <TrendingUp className="w-3 h-3 mr-0.5 inline" /> 24.4%
+                <span
+                  className={`badge text-xs font-semibold border-0 ${
+                    profitGrowth.isPositive
+                      ? "badge-success/15 text-success"
+                      : "badge-error/15 text-error"
+                  }`}
+                >
+                  {profitGrowth.isPositive ? (
+                    <TrendingUp className="w-3 h-3 mr-0.5 inline" />
+                  ) : (
+                    <TrendingDown className="w-3 h-3 mr-0.5 inline" />
+                  )}{" "}
+                  {profitGrowth.pct}
                 </span>
                 <span className="text-xs text-base-content/50">
                   vs. last period
@@ -382,12 +561,19 @@ export default async function Dashboard() {
         {/* Right Sidebar Section (1 Column) */}
         <div className="space-y-6">
           <div className="card bg-base-100 p-6 rounded-2xl shadow-sm border border-base-200/60">
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex justify-between items-center mb-1">
               <h2 className="text-base font-bold">Most Day Active</h2>
               <button className="btn btn-ghost btn-xs btn-circle">
                 <DotsHorizontalRounded className="w-4 h-4 text-base-content/50" />
               </button>
             </div>
+            {topDay && (
+              <p className="text-xs text-base-content/50">
+                Peak:{" "}
+                <span className="font-semibold text-primary">{topDay}</span> (
+                {maxVisits.toLocaleString()} visits)
+              </p>
+            )}
             <BarchartDays barData={barData} />
           </div>
 
@@ -398,10 +584,10 @@ export default async function Dashboard() {
                 <DotsHorizontalRounded className="w-4 h-4 text-base-content/50" />
               </button>
             </div>
-            <Gaugechart gaugeData={gaugeData} />
+            <Gaugechart gaugeData={gaugeData} summary={repeatSummary} />
           </div>
 
-          <div className="card bg-base-100 p-6 rounded-2xl shadow-sm border border-base-200/60">
+          {/* <div className="card bg-base-100 p-6 rounded-2xl shadow-sm border border-base-200/60">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-base font-bold">AI Assistant</h2>
               <button className="btn btn-ghost btn-xs btn-circle">
@@ -431,7 +617,7 @@ export default async function Dashboard() {
                 </button>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

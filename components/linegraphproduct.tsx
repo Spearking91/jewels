@@ -10,6 +10,12 @@ import {
   Area,
 } from "recharts";
 
+export interface ProfitPoint {
+  date: string;
+  current: number;
+  previous: number;
+}
+
 const CustomProfitTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
@@ -17,13 +23,13 @@ const CustomProfitTooltip = ({ active, payload, label }: any) => {
         <p className="font-semibold text-base-content/70 mb-1">{label}</p>
         <p className="text-primary font-bold flex items-center gap-1">
           <span className="w-2 h-2 rounded-full bg-primary inline-block"></span>
-          ${payload[0]?.value?.toLocaleString()}{" "}
-          <span className="font-normal text-base-content/50">this month</span>
+          GH₵{Number(payload[0]?.value ?? 0).toLocaleString()}{" "}
+          <span className="font-normal text-base-content/50">this period</span>
         </p>
         <p className="text-base-content/60 flex items-center gap-1 mt-0.5">
           <span className="w-2 h-2 rounded-full bg-base-300 inline-block"></span>
-          ${payload[1]?.value?.toLocaleString()}{" "}
-          <span className="font-normal text-base-content/50">last month</span>
+          GH₵{Number(payload[1]?.value ?? 0).toLocaleString()}{" "}
+          <span className="font-normal text-base-content/50">last period</span>
         </p>
       </div>
     );
@@ -31,13 +37,21 @@ const CustomProfitTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const LinegraphProduct = ({ profitData }: { profitData: any }) => {
+const LinegraphProduct = ({ profitData }: { profitData: ProfitPoint[] }) => {
+  if (!profitData || profitData.length === 0) {
+    return (
+      <div className="h-64 w-full flex items-center justify-center text-xs text-base-content/50 border border-dashed border-base-200 rounded-xl">
+        No profit data recorded for this period.
+      </div>
+    );
+  }
+
   return (
     <div className="h-64 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
           data={profitData}
-          margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+          margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
         >
           <defs>
             <linearGradient id="colorCurrent" x1="0" y1="0" x2="0" y2="1">
@@ -60,7 +74,9 @@ const LinegraphProduct = ({ profitData }: { profitData: any }) => {
             axisLine={false}
             tickLine={false}
             tick={{ fontSize: 12, fill: "#9ca3af" }}
-            tickFormatter={(val) => (val >= 1000 ? `${val / 1000}K` : val)}
+            tickFormatter={(val) =>
+              val >= 1000 ? `${(val / 1000).toFixed(1)}K` : val
+            }
           />
           <Tooltip content={<CustomProfitTooltip />} />
           <Line
