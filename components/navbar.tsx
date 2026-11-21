@@ -117,7 +117,7 @@ export default function Navbar() {
 
       {/* Right Section: Theme Swap, Notifications & User Profile */}
       <div className="navbar-end w-auto lg:w-1/4 gap-1 sm:gap-2">
-        <label className="swap swap-rotate btn btn-ghost btn-circle btn-sm text-base-content/70 hover:text-base-content">
+        {/* <label className="swap swap-rotate btn btn-ghost btn-circle btn-sm text-base-content/70 hover:text-base-content">
           <input type="checkbox" className="theme-controller" value="night" />
           <Sun className="swap-off size-5" />
           <Moon className="swap-on size-5" />
@@ -126,7 +126,7 @@ export default function Navbar() {
         <button className="btn btn-ghost btn-circle btn-sm relative text-base-content/70 hover:text-base-content">
           <Bell className="size-5" />
           <span className="absolute top-1.5 right-1.5 size-2 bg-primary rounded-full ring-2 ring-base-100" />
-        </button>
+        </button> */}
 
         {/* User Profile Dropdown */}
         {user ? (

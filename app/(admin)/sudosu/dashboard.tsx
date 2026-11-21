@@ -442,7 +442,7 @@ export default async function Dashboard() {
             </div>
 
             <LinegraphProduct profitData={profitData} />
-            <div className="mt-6 pt-6 border-t border-base-200">
+            {/* <div className="mt-6 pt-6 border-t border-base-200">
               <div className="text-xs font-bold text-base-content/70 mb-3">
                 Customers
               </div>
@@ -457,7 +457,7 @@ export default async function Dashboard() {
                   />
                 ))}
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Low Stock Products Table */}
