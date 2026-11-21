@@ -15,6 +15,9 @@ import Link from "next/link";
 import { notFound, useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
+const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1693212793204-bcea856c75fe";
+
 // Inner component that safely uses useParams() inside Suspense
 function ProductDetailsContent() {
   const params = useParams();
@@ -26,6 +29,7 @@ function ProductDetailsContent() {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   useEffect(() => {
     if (!productId) return;
@@ -43,6 +47,7 @@ function ProductDetailsContent() {
         setProduct(null);
       } else {
         setProduct(data);
+        setSelectedIndex(0);
       }
       setLoading(false);
     };
@@ -62,6 +67,15 @@ function ProductDetailsContent() {
     notFound();
   }
 
+  // Normalize product.imageUrl into a clean array of URLs
+  const images: string[] = Array.isArray(product.imageUrl)
+    ? product.imageUrl.filter(Boolean)
+    : product.imageUrl
+      ? [product.imageUrl]
+      : [FALLBACK_IMAGE];
+
+  const displayImage = images[selectedIndex] || images[0] || FALLBACK_IMAGE;
+
   const handleAddToCart = async () => {
     setAdding(true);
 
@@ -69,11 +83,6 @@ function ProductDetailsContent() {
       Number(product.selling_price) ||
       Number(String(product.price || "0").replace(/[^0-9.]/g, "")) ||
       0;
-
-    const imageUrl =
-      Array.isArray(product.imageUrl) && product.imageUrl.length > 0
-        ? product.imageUrl[0]
-        : product.imageUrl || "";
 
     const res = await addToCart({
       productId: product.id.toString(),
@@ -84,7 +93,7 @@ function ProductDetailsContent() {
       gemstone: product.gemstone || "",
       price: numericPrice,
       quantity: quantity,
-      imageUrl: imageUrl,
+      imageUrl: images[0] || "",
     });
 
     setAdding(false);
@@ -109,12 +118,6 @@ function ProductDetailsContent() {
   const handleDecrement = () =>
     setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
-  const displayImage =
-    Array.isArray(product.imageUrl) && product.imageUrl.length > 0
-      ? product.imageUrl[0]
-      : product.imageUrl ||
-        "https://images.unsplash.com/photo-1693212793204-bcea856c75fe";
-
   return (
     <div className="min-h-screen bg-base-100 text-base-content px-6 lg:px-16 py-8 flex flex-col items-center w-full">
       {/* Navigation / Breadcrumb */}
@@ -134,13 +137,14 @@ function ProductDetailsContent() {
       <main className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start pb-16">
         {/* Left Column: Media Showcase */}
         <div className="lg:col-span-7 flex flex-col gap-4">
+          {/* Main Image Box */}
           <div className="relative group w-full aspect-square rounded-3xl overflow-hidden border border-white/10 bg-black/40 shadow-2xl">
             <img
               src={displayImage}
-              alt={product.title}
+              alt={`${product.title} - view ${selectedIndex + 1}`}
               className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80 pointer-events-none" />
 
             <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between">
               <span className="text-xs font-mono tracking-widest uppercase text-white/70 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10">
@@ -151,6 +155,34 @@ function ProductDetailsContent() {
               </span>
             </div>
           </div>
+
+          {/* Thumbnail Gallery Strip */}
+          {images.length > 1 && (
+            <div className="flex items-center gap-3 overflow-x-auto pb-1">
+              {images.map((imgUrl, index) => {
+                const isSelected = index === selectedIndex;
+                return (
+                  <button
+                    key={`${imgUrl}-${index}`}
+                    type="button"
+                    onClick={() => setSelectedIndex(index)}
+                    aria-label={`View image ${index + 1}`}
+                    className={`relative w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-2xl overflow-hidden border-2 transition-all duration-200 cursor-pointer bg-black/40 ${
+                      isSelected
+                        ? "border-primary ring-2 ring-primary/30 scale-[1.02]"
+                        : "border-white/10 opacity-60 hover:opacity-100 hover:border-white/30"
+                    }`}
+                  >
+                    <img
+                      src={imgUrl}
+                      alt={`${product.title} thumbnail ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Right Column: Product Intelligence & Acquisition */}

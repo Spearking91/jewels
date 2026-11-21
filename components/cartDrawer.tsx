@@ -121,7 +121,7 @@ const CartDrawer = ({ children }: { children: React.ReactNode }) => {
             <div className="flex items-center justify-between pb-4 border-b border-base-300">
               <div className="flex items-center gap-2">
                 <ShoppingBag className="w-5 h-5 text-primary" />
-                <h2 className="text-lg font-bold">Your Shopping Cart</h2>
+                <h2 className="text-lg font-bold">Your Shopping Bag</h2>
                 <span className="badge badge-sm badge-neutral/10 font-bold">{totalItems}</span>
               </div>
               <label htmlFor="cart-drawer-toggle" className="btn btn-sm btn-ghost btn-square">
@@ -140,7 +140,7 @@ const CartDrawer = ({ children }: { children: React.ReactNode }) => {
                 ))
               ) : cartItems.length === 0 ? (
                 <div className="text-center py-16 text-base-content/50 text-sm">
-                  Your cart is empty. Browse our collection to add pieces!
+                  Your bag is empty. Browse our collection to add pieces!
                 </div>
               ) : (
                 cartItems.map((item) => (

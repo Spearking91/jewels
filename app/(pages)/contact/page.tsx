@@ -49,8 +49,8 @@ export default function Contact() {
     {
       Icon: Tiktok,
       label: "TikTok",
-      handle: "@yourhandle",
-      href: "https://tiktok.com/@yourhandle",
+      handle: "@oyce.jewels",
+      href: "https://www.tiktok.com/@oyce.jewels",
     },
   ];
 

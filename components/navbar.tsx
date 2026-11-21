@@ -8,10 +8,10 @@ import { useRouter } from "next/navigation";
 import {
   DockLeft,
   Search,
-  Sun,
-  Moon,
-  Bell,
-  User,
+  // Sun,
+  // Moon,
+  // Bell,
+  // User,
   Cog,
   ArrowRightSquare,
 } from "@boxicons/react";
