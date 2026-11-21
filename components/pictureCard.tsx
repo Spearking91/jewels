@@ -17,7 +17,7 @@ const PictureCard = ({
       <div className="card-body items-center">
         <h2 className="card-title">{description} </h2>
 
-        <span className="text-sm">${price}</span>
+        <span className="text-sm">GH₵{price}</span>
 
         <div className="card-actions justify-end"></div>
       </div>

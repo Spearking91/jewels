@@ -15,7 +15,6 @@ const Home = () => {
   return (
     <>
       <section className="min-h-screen flex flex-col items-center justify-center text-base-content w-full px-5 pb-10">
-        
         <div className=" flex w-full justify-center items-center flex-col-reverse gap-5 lg:flex-row-reverse">
           <div className=" flex justify-between items-center flex-col ">
             <div className="h- w-full flex flex-col justify-between items-center  ">
@@ -52,7 +51,7 @@ const Home = () => {
                 Shop Now
               </Link>
               <p className="py-6 text-primary font-bolds">
-                FREE SHIPPING ON ORDERS OVER $100 • 1 YEAR WARRANTY
+                ORDER NOW, WE CAN REACH YOU ANYWHERE IN GHANA
               </p>
             </div>
           </div>
